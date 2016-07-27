@@ -4,7 +4,6 @@
 # Reads the input root files stored in eos
 # Split the files into desired number of jobs and writes them to text files
 # Write the condor batch (.jdl) files 
-# Write the executible (.csh) files to be read by condor batch files
 # Usage: python batchMaker.py
 ##################################################################################
 
@@ -24,7 +23,7 @@ parser.add_option('--outTextDir', metavar='F', type='string', action='store',
                   help='output directory containing lists input txt file')
 
 parser.add_option('--outRootDir', metavar='F', type='string', action='store',
-                  default = '/store/user/skhalil',
+                  default = '/store/user/skhalil/DelphesHists',
                   dest='outRootDir',
                   help='output directory holding the final root files')
 
@@ -38,19 +37,8 @@ parser.add_option('--delphesTag', metavar='T', type='string', action='store',
                   dest='delphesTag',
                   help='default delphes tag in production')
 
-parser.add_option ('--ana', type='string',
-                   default = 'RunAnalyzer.C',
-                   dest='ana',
-                   help="root macro that you like to run")
-
-parser.add_option ('--exeScript', type='string',
-                   default = 'condorDummy.sh',
-                   dest='exeScript',
-                   help="condor executable script base")
-
 # Parse and get arguments
 (options, args) = parser.parse_args()
-
 
 def makeFilenameList(inputDir):
     if not os.path.isdir(inputDir):
@@ -66,17 +54,13 @@ def makeFilenameList(inputDir):
     return filenamelist
 
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 scriptPath = options.scriptPath
 tag = options.delphesTag
 inputPath = options.inputPath
 outTextDir = options.outTextDir
-scriptPath = options.scriptPath
-#print 'path = ', PATH, ',tag = ', tag
-runSplit = True
-anaBase = options.ana
-scriptBase = options.exeScript
 outRootDir = options.outRootDir
+#print 'scriptPath: ', scriptPath, ',tag: ', tag, ', inputPath: ', inputPath, ', outTextDir: ', outTextDir, ', outRootDir: ', outRootDir  
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -86,15 +70,11 @@ toMake = [{'name':'tt-4p-0-600','jobs': 10}]
 
 for s in toMake:
     
-    if runSplit: 
-        outDir = outTextDir+'/'+s['name']
-        if not os.path.isdir(outDir):
-            subprocess.call( ['mkdir '+outDir], shell=True )
-        maxJobs = s['jobs']
-    else: 
-        outDir = outTextDir
-        maxJobs = 1
-        
+    outDir = outTextDir+'/'+s['name']
+    if not os.path.isdir(outDir):
+        subprocess.call( ['mkdir '+outDir], shell=True )
+    maxJobs = s['jobs']
+    
     #list all root files in the input directory and decide on number of jobs you wish to split the files
     inputDir = (inputPath+'/'+s['name']+'-'+tag).rstrip('/')+'/'
     filenamelist = makeFilenameList(inputDir)
@@ -127,7 +107,6 @@ for s in toMake:
         line = line.replace('SAMPLE', s['name'])
         line = line.replace('INTEXTDIR', outDir)
         line = line.replace('LOGDIR', condorLogDir)
-        line = line.replace('ANALYZER', anaBase)
         line = line.replace('OUTPUTDIR',outRootDir)
         #print line
         outputFile.writelines(line)

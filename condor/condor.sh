@@ -32,19 +32,25 @@ echo "cp -r $INPATH ."
 cp -r $INPATH .
 echo "tar -xzf delphes.tar"
 tar -xzf delphes.tar
+echo "ls -lrt"
+ls -lrt
 
-
+######################################################
+# assuming INPATH directory name is same as $SAMPLE,
+# loop over all the .txt files inside the directory,
+# and run the root macro
+######################################################
 count = 0
-for txt in `ls $INPATH`; do
+for txt in `ls $SAMPLE`; do
     echo "going here: "$txt
-    if test -f $INPATH/$txt; then
-        echo "file   $INPATH/$txt   exists"
+    if test -f $SAMPLE/$txt; then
+        echo "file   $SAMPLE/$txt   exists"
         name=`basename $txt .txt`
         echo "output file name: $name "
         if test $count -eq $PROCESS; then
             echo "${name}"
-            echo "root -b -q -l RunAnalyzer.C'($INPATH/$txt)"
-            root -b -q -l RunAnalyzer.C'("$INPATH/$txt")'
+            echo "root -b -q -l RunAnalyzer.C'($SAMPLE/$txt)"
+            root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt")'
         fi
         let "count+=1"
     fi
