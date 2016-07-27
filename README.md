@@ -1,12 +1,12 @@
-Frame work for Delphes analysis
+# Frame work for Delphes analysis #
 
-# CMS environment
+## CMS environment
 
 <cmsrel CMSSW_8_0_4>
 <cd CMSSW_8_0_4/src>
 <cmsenv>
 
-# installing delphes
+## installing delphes
 
 <git clone https://github.com/delphes/delphes> 
 <cd delphes>
@@ -15,16 +15,16 @@ Frame work for Delphes analysis
 <make -j 4>
 <cd ..>
 
-# checkout analysis framework
+## checkout analysis framework
 
 git clone https://github.com/skhalil/DelphesAnalysis.git DelphesAnalysis
 
-# test run
+## test run
 
-<cd DelphesAnalysis>
-<root -l DelphesAnalysis/RunAnalyzer.C'("FileLists/tt-4p-0-600_200PU_1.txt")'>
+`<cd DelphesAnalysis>`
+`<root -l DelphesAnalysis/RunAnalyzer.C'("FileLists/tt-4p-0-600_200PU_1.txt")'>`
 
-# to run over full samples using condor
+## to run over full samples using condor
 
 For beginers, see [condor](http://uscms.org/uscms_at_work/physics/computing/setup/batch_systems.shtml")
 
