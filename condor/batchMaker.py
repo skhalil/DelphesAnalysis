@@ -23,6 +23,11 @@ parser.add_option('--outTextDir', metavar='F', type='string', action='store',
                   dest='outTextDir',
                   help='output directory containing lists input txt file')
 
+parser.add_option('--outRootDir', metavar='F', type='string', action='store',
+                  default = '/store/user/skhalil',
+                  dest='outRootDir',
+                  help='output directory holding the final root files')
+
 parser.add_option('--scriptPath', metavar='P', type='string', action='store',
                   default = '/uscms_data/d2/skhalil/Delphes2/CMSSW_8_0_4/src/DelphesAnalysis/condor',
                   dest='scriptPath',
@@ -71,6 +76,7 @@ scriptPath = options.scriptPath
 runSplit = True
 anaBase = options.ana
 scriptBase = options.exeScript
+outRootDir = options.outRootDir
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -114,14 +120,15 @@ for s in toMake:
     condorLogDir = 'condorLog_'+s['name']
     if not os.path.isdir(condorLogDir):
         subprocess.call( ['mkdir '+condorLogDir], shell=True )
-
+   
     for line in inputFile:
-        line = line.replace('PATH', scriptPath )
+        line = line.replace('RUNPATH', scriptPath )
         line = line.replace('NJOBS',  str(s['jobs']))
-        line = line.replace('SCRIPT', 'run_'+s['name']+'.sh')
-        line = line.replace('INPATH', outDir)
+        line = line.replace('SAMPLE', s['name'])
+        line = line.replace('INTEXTDIR', outDir)
         line = line.replace('LOGDIR', condorLogDir)
         line = line.replace('ANALYZER', anaBase)
+        line = line.replace('OUTPUTDIR',outRootDir)
         #print line
         outputFile.writelines(line)
     inputFile.close()
