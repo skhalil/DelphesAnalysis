@@ -112,5 +112,7 @@ for s in toMake:
         outputFile.writelines(line)
     inputFile.close()
     outputFile.close()
-     
+    
+    # create the output directories where you like to store the output histograms in /eos directory
+    subprocess.call( ['eos root://cmseos.fnal.gov mkdir -p /eos/uscms/store/user/skhalil/DelphesHists/'+str(s['name'])], shell=True )
     

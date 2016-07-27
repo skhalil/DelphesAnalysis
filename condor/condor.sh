@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 
 echo "input parameters: cluster, process, run path, input path, out path, sample name" $1 $2 $3 $4 $5 $6
 
@@ -16,6 +16,7 @@ echo "CLUSTER: $CLUSTER"
 echo "PROCESS: $PROCESS"
 echo "RUNPATH: $RUNPATH"
 echo "INPATH:  $INPATH"
+echo "OUTPATH: $OUTPATH"
 echo "SAMPLE:  $SAMPLE"
 
 
@@ -46,12 +47,9 @@ for txt in `ls $SAMPLE`; do
         #echo "output root file name: $name "
         if test $counter -eq $PROCESS; then
             echo "input file  $SAMPLE/$txt  exists"
-            echo "output file name ${name}"
-            #echo "new name: `$SAMPLE`_${counter}"
-            echo "root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt","${name}")' "
-            root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt", "${name}")'
-            #echo "root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt","$SAMPLE_${counter}")' "
-            #root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt", "$SAMPLE_${counter}")'
+            echo "output file name ${name}"         
+            echo " root -b -q -l RunAnalyzer.C'("'$SAMPLE/$txt'", "'${name}'")' "
+            root -b -q -l RunAnalyzer.C'("'$SAMPLE/$txt'", "'${name}'")'
         fi
         let "counter+=1"
     fi
@@ -59,9 +57,13 @@ done
 
 # copy the output root files and clean your mess:
 # ===============================================
+ls -lrt
 
-echo "xrdcp *.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE"
-xrdcp *.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE
+#echo "eos root://cmseos.fnal.gov mkdir -p /store/user/skhalil/$OUTPATH/$SAMPLE"
+#eos root://cmseos.fnal.gov mkdir -p /store/user/skhalil/$OUTPATH/$SAMPLE
+
+echo "xrdcp *.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/"
+xrdcp *.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/
 rm *.root
 rm *.C
 rm *.h
