@@ -90,7 +90,7 @@ for s in toMake:
         if lines:
             with open(outDir+'/'+s['name']+'_200PU'+'_'+str(job)+'.txt', 'w') as output_:
                 for line in lines:
-                    preprend = 'root://cmseos.fnal.gov/'+inputDir.split('/',3)[3]
+                    preprend = 'root://cmseos.fnal.gov//'+inputDir.split('/',3)[3]
                     output_.write(preprend+'/'+line+'\n') 
             output_.close() 
             

@@ -22,7 +22,7 @@
 ## test run
 
     cd DelphesAnalysis
-    root -l DelphesAnalysis/RunAnalyzer.C'("FileLists/tt-4p-0-600_200PU_1.txt")'
+    root -l DelphesAnalysis/RunAnalyzer.C'("DelphesAnalysis/FileLists/tt-4p-0-600_200PU_1.txt", "test")'
 
 ## to run over full samples using condor
 
@@ -33,7 +33,10 @@ For beginers, see [condor](http://uscms.org/uscms_at_work/physics/computing/setu
      ln -s ../DelphesVLQAnalaysis.C DelphesVLQAnalaysis.C
      ln -s ../DelphesVLQAnalaysis.h DelphesVLQAnalaysis.h
      ln -s ../../delphes delphes
-     tar -czf delphes.tar delphes
+     cd ../../
+     tar -zcvf delphes.tar.gz delphes/
+     mv delphes.tar.gz DelphesAnalysis/condor/
+     cd DelphesAnalysis/condor/
      python batchMaker.py
 
 More details can be found in condor/ReadMeCondor.txt file.

@@ -8,13 +8,13 @@ WhenTOTransferOutput  = ON_EXIT
 request_memory = 2100
 request_disk = 10000000 
 notification = never
-inPath = INTEXTDIR
-runPath = RUNPATH
-sample = SAMPLE
-outPath = OUTPUTDIR
-myLogFolder = LOGDIR
+inPath = /uscms_data/d2/skhalil/Delphes2/CMSSW_8_0_4/src/DelphesAnalysis/FileLists/tt-4p-0-600
+runPath = /uscms_data/d2/skhalil/Delphes2/CMSSW_8_0_4/src/DelphesAnalysis/condor
+sample = tt-4p-0-600
+outPath = /store/user/skhalil/DelphesHists
+myLogFolder = condorLog_tt-4p-0-600
 Output = $(runPath)/$(myLogFolder)/batch_$(cluster)_$(process).stdout
 Error  = $(runPath)/$(myLogFolder)/batch_$(cluster)_$(process).stderr
 Log    = $(runPath)/$(myLogFolder)/batch_$(cluster)_$(process).condor
 Arguments = $(cluster) $(process) $(runPath) $(inPath) $(outPath) $(sample)
-Queue NJOBS
+Queue 10

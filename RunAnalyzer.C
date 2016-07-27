@@ -4,14 +4,14 @@
 #include <iostream>
 #include "DelphesVLQAnalaysis.C"
 
-void RunAnalyzer(const char *inputFile){
+void RunAnalyzer(const char *inputFile, const char *outputFile){
     // REMOVE THE LINE BELOW IF NOT RUNNING IN CMSSW ENVIRONMENT
     gSystem->AddIncludePath("-I" + TString(gSystem->Getenv("CMSSW_RELEASE_BASE")) + "/src"); 
     // Analysis macro
     //gROOT->LoadMacro("DelphesVLQAnalysis.C++");
 
     DelphesVLQAnalysis *vlq = new DelphesVLQAnalysis;
-    vlq->Init(inputFile);
+    vlq->Init(inputFile, outputFile);
 
     TStopwatch ts;
     ts.Start();

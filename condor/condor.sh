@@ -30,39 +30,44 @@ cd ${_CONDOR_SCRATCH_DIR}
 echo "executing ..."
 echo "cp -r $INPATH ."
 cp -r $INPATH .
-echo "tar -xzf delphes.tar"
-tar -xzf delphes.tar
+echo "tar -xzvf delphes.tar.gz"
+tar -xzvf delphes.tar.gz
 echo "ls -lrt"
 ls -lrt
 
-######################################################
 # assuming INPATH directory name is same as $SAMPLE,
-# loop over all the .txt files inside the directory,
-# and run the root macro
-######################################################
-count = 0
+# loop over all the .txt files inside the directory
+# ==================================================
+
+counter=0
 for txt in `ls $SAMPLE`; do
-    echo "going here: "$txt
-    if test -f $SAMPLE/$txt; then
-        echo "file   $SAMPLE/$txt   exists"
+    if test -f $SAMPLE/$txt; then        
         name=`basename $txt .txt`
-        echo "output file name: $name "
-        if test $count -eq $PROCESS; then
-            echo "${name}"
-            echo "root -b -q -l RunAnalyzer.C'($SAMPLE/$txt)"
-            root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt")'
+        #echo "output root file name: $name "
+        if test $counter -eq $PROCESS; then
+            echo "input file  $SAMPLE/$txt  exists"
+            echo "output file name ${name}"
+            #echo "new name: `$SAMPLE`_${counter}"
+            echo "root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt","${name}")' "
+            root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt", "${name}")'
+            #echo "root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt","$SAMPLE_${counter}")' "
+            #root -b -q -l RunAnalyzer.C'("$SAMPLE/$txt", "$SAMPLE_${counter}")'
         fi
-        let "count+=1"
+        let "counter+=1"
     fi
 done
 
-echo "*.root root://cmseos.fnal.gov/$OUTPUT/$SAMPLE"
-xrdcp *.root root://cmseos.fnal.gov/$OUTPUT/$SAMPLE
-echo "rm *.root" 
+# copy the output root files and clean your mess:
+# ===============================================
+
+echo "xrdcp *.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE"
+xrdcp *.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE
 rm *.root
 rm *.C
-rm delphes.tgz
+rm *.h
+rm delphes.tar.gz
 rm -rf delphes
+rm -rf $SAMPLE
 
 ls
 

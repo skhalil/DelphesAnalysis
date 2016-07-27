@@ -3,6 +3,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <vector>
+#include <string>
 #include <TString.h>
 #include <utility>
 #include <fstream>
@@ -70,7 +71,7 @@ public:
    DelphesVLQAnalysis();
    ~DelphesVLQAnalysis();
 
-   virtual void Init(const char *inString);
+   virtual void Init(const char *inString, const char *outFileName);
    virtual void LoadChain();
    virtual void Loop();
    template<typename T>
@@ -116,7 +117,7 @@ DelphesVLQAnalysis::DelphesVLQAnalysis(){
 DelphesVLQAnalysis::~DelphesVLQAnalysis(){};
 
 
-void DelphesVLQAnalysis::Init(const char *inString){
+void DelphesVLQAnalysis::Init(const char *inString, const char *outFileName){
    inputString = inString;
    inChain->SetName("Delphes");
    //inChain->Add("/uscms_data/d2/skhalil/Delphes/macro/tt-4p-0-600-v1510_14TEV_100645887_PhaseII_Substructure_200PU_seed100645888_1of1.root");
@@ -137,7 +138,10 @@ void DelphesVLQAnalysis::Init(const char *inString){
    branchMissingET             = treeReader->UseBranch("MissingET");
    
    bookHisto();
-   outFile = new TFile("test.root", "RECREATE");
+
+   TString str = outFileName + std::string(".root");
+   char * outName = (char*) str.Data();
+   outFile = new TFile(outName, "RECREATE");
    
    cout << "INITIALIZED!" << endl;    
    return;
