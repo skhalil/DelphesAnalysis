@@ -2,9 +2,9 @@
 
 ## CMS environment
 
-<cmsrel CMSSW_8_0_4>
-<cd CMSSW_8_0_4/src>
-<cmsenv>
+    cmsrel CMSSW_8_0_4
+    cd CMSSW_8_0_4/src
+    cmsenv
 
 ## installing delphes
 
