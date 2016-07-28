@@ -43,7 +43,7 @@ void DelphesVLQAnalysis::Loop(){
       // access MissingET
       met = (MissingET*)branchMissingET->At(0);
       
-      // Select leptons with pT > 50 GeV,|eta| < 4.0 and iso < 100
+      // Select leptons with pT > 50 GeV,|eta| < 4.0 and no iso (< 100)
       CollectionFilter(*branchElectron,  *electrons , 30.0 , 4.0, 100.);//0.1
       CollectionFilter(*branchMuonTight, *muons     , 30.0 , 4.0, 100.);//0.1
       
@@ -73,8 +73,8 @@ void DelphesVLQAnalysis::Loop(){
          eta = jet->P4().Eta();
          if(jet->P4().Pt() < 30.0)             continue;
          if(TMath::Abs(eta) > 5.0)             continue;
-         
-        //traditional jet cleaning for non-isolated jets
+        
+         //traditional jet cleaning for non-isolated jets
          if(Overlaps(*jet, *electrons, 0.4))   continue;
          if(Overlaps(*jet, *muons, 0.4))       continue;
       
@@ -83,19 +83,23 @@ void DelphesVLQAnalysis::Loop(){
          if (dR < dRMin){
             nearestJetP4 = jet->P4();
             dRMin = dR;
-         }
+         } 
          goodjets->push_back(jet);
       }
       
       // - Store 2d isolation variables 
       Float_t ptRel = nearestJetP4.Perp( leptonP4.Vect() );
+      TVector3 nearestJet_v3 = nearestJetP4.Vect();
+      TVector3 lepton_v3 = leptonP4.Vect();
+      Float_t dPtRel = (nearestJet_v3.Cross( lepton_v3 )).Mag()/ nearestJet_v3.Mag();
       hName["hPtRel"]->Fill(ptRel, evtwt);
+      hName["hDPtRel"]->Fill(dPtRel, evtwt);
       hName["hDRMin"]->Fill(dRMin, evtwt); 
       prName["prPtRelDRMin"]->Fill(ptRel, dRMin, evtwt);
-      hName2D["h2DPtRelDRMin"]->Fill(ptRel, dRMin, evtwt);
+      hName2D["h2DdPtRelDRMin"]->Fill(dRMin, dPtRel, evtwt);
 
       // 3 - ptRel >= 40
-      if (ptRel < 40.) continue;
+      if (dPtRel < 10.) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt); 
       hName["hLepIso"]->Fill(lepIso, evtwt);
@@ -188,7 +192,7 @@ void DelphesVLQAnalysis::bookHisto(){
    const int nCuts = 10;
    const char *cuts[nCuts] = {"Total", 
                               "== 1 lep", 
-                              "p_{T,rel} > 40",
+                              "#Delta p_{T,rel} > 10",
                               "N(fwd jet) #geq 1", 
                               "N(jet) #geq 3", 
                               "leading jet pt > 100", 
@@ -199,21 +203,22 @@ void DelphesVLQAnalysis::bookHisto(){
    for (int i=1;i<=nCuts;i++) hName["hEff"]->GetXaxis()->SetBinLabel(i,cuts[i-1]);
 
    h1D("hLepIso", "LepIso", "LepIso", "Events", 200, 0, 5);
-   h1D("hLepPt", "hLepPt", "p_{T}(e/#mu)", "p_{T}(e/#mu) [GeV]", 50, 0.0,400.0);
-   h1D("hLepEta", "hLepEta", "#eta(e/#mu)", "#eta(e/#mu)", 40, -5.0,5.0);
-   h1D("hDRMin", "hDRMin", "#Delta R_{MIN}", "#Delta R_{MIN}(l,j)", 30, 0.0,3.0);
-   h1D("hPtRel", "hPtRel", "p_{T}^{REL}","p_{T}^{REL} [GeV]", 50, 0, 100);
-   h1P("prPtRelDRMin", "prPtRelDRMin", "p_{T}^{REL} [GeV]", "#Delta R_{MIN}(l,j)", 50, 0, 100); 
-   h2D("h2DPtRelDRMin", "h2DPtRelDRMin", "p_{T}^{REL} [GeV]", "#Delta R_{MIN}(l,j)", 50, 0, 100, 50, 0.0,5.0);
-   h1D("hForwardJetPt", "hForwardJetPt", "FwdJetPt", "FwdJetPt [GeV}", 60, 0, 600);
+   h1D("hLepPt", "p_{T}(e/#mu)", "p_{T}(e/#mu) [GeV]", "Events/20 GeV", 50, 0.0,400.0);
+   h1D("hLepEta", "#eta(e/#mu)", "#eta(e/#mu)", "Events", 40, -5.0,5.0);
+   h1D("hDRMin", "#Delta R_{MIN}", "#Delta R_{MIN}(l,j)", "Events", 30, 0.0,3.0);
+   h1D("hPtRel", "p_{T}^{REL}","p_{T}^{REL} [GeV]", "Events/20 GeV", 50, 0, 100);
+   h1D("hDPtRel", "#Delta p_{T}^{REL}","#Delta p_{T}^{REL} [GeV]", "Events/20 GeV", 50, 0, 100);
+   h1P("prPtRelDRMin", "p_{T}^{REL}", "p_{T}^{REL} (#Delta R_{MIN}(l,j) ) [GeV]", "Events", 50, 0, 100); 
+   h2D("h2DdPtRelDRMin", "h2DdPtRelDRMin", "#Delta R_{MIN}(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 25., 0., 500.);
+   h1D("hForwardJetPt", "FwdJetPt", "FwdJetPt [GeV}", "Events/100 GeV", 60, 0, 600);
    h1D("hForwardJetEta","hForwardJetEta", "#eta(MostFwdjet)", "#eta(MostFwdjet)", 50, -5.0, 5.0);
    h1D("hNFJets", "hNFJets", "nfFwdJets", "nfFwdJets", 4, 0.5, 4.5);
-   h1D("hNJets", "hNJets", "nJets", "nJets", 10, 0.5, 10.5);
-   h1D("hLeadingJetPt", "hLeadingJetPt", "Jet1Pt", "Jet1Pt [GeV]", 80, 0, 800);
-   h1D("hSecLeadingJetPt", "hSecLeadingJetPt", "Jet2Pt", "Jet2Pt [GeV]", 60, 0, 600);
-   h1D("hNbjets", "hNbjets", "nbjets", "nbjets", 6, 0.5, 6.5);
-   h1D("hbJetPt", "hbJetPt", "bJetPt", "bJetPt [GeV]", 80, 0, 800);
-   h1D("hbJetEta", "hbJetEta", "#eta(bjets)", "#eta(bjets)", 50, -5.0, 5.0);
+   h1D("hNJets", "nJets", "nJets", "Events", 10, 0.5, 10.5);
+   h1D("hLeadingJetPt", "Jet1Pt", "Jet1Pt [GeV]", "Events/100 GeV", 80, 0, 800);
+   h1D("hSecLeadingJetPt", "Jet2Pt", "Jet2Pt [GeV]", "Events/100 GeV", 60, 0, 600);
+   h1D("hNbjets", "nbjets", "nbjets", "Events", 6, 0.5, 6.5);
+   h1D("hbJetPt", "bJetPt", "bJetPt [GeV]", "Events/100 GeV", 80, 0, 800);
+   h1D("hbJetEta", "#eta(bjets)", "#eta(bjets)", "Events", 50, -5.0, 5.0);
    h1D("hHT","H_{T}","H_{T} [GeV]","Events/ 200 GeV", 70, 0, 1400);
    
 }

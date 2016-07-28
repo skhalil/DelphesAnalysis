@@ -132,7 +132,7 @@ void DelphesVLQAnalysis::Init(const char *inString, const char *outFileName){
    branchEvent                 = treeReader->UseBranch("Event");
    branchElectron              = treeReader->UseBranch("Electron");
    branchMuonTight             = treeReader->UseBranch("MuonTight");
-   branchJet                   = treeReader->UseBranch("Jet");
+   branchJet                   = treeReader->UseBranch("JetPUPPI");
    branchJetAK8                = treeReader->UseBranch("JetAK8");
    branchScalarHT              = treeReader->UseBranch("ScalarHT");
    branchMissingET             = treeReader->UseBranch("MissingET");
