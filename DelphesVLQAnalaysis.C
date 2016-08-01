@@ -93,8 +93,10 @@ void DelphesVLQAnalysis::Loop(){
          if(TMath::Abs(eta) > 5.0)             continue;
         
          //traditional jet cleaning for isolated jets
-         if(Overlaps(*jet, *electrons, 0.4))   continue;
-         if(Overlaps(*jet, *muons, 0.4))       continue;
+         //DMif(Overlaps(*jet, *electrons, 0.4))   continue;
+         //DMif(Overlaps(*jet, *muons, 0.4))       continue;
+         if(Overlaps2D(*jet, *electrons, 0.4, 60.)) continue;
+         if(Overlaps2D(*jet, *muons    , 0.4, 60.)) continue;
 
 
          //find the min_dR(l,j)
