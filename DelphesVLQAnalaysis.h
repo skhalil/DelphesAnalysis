@@ -84,7 +84,7 @@ public:
    template<typename T>
    Bool_t Overlaps(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
    template<typename T>
-   Bool_t Overlaps2D(vector<const Jet*>* jets, const T* lep, Double_t drMax, Double_t ptrelMax);
+   Bool_t Overlaps2D(vector<const Jet*>* jets, const T* lep, Double_t drMax, Double_t ptrelMin);
    template<typename T>
    TLorentzVector OverlapConstituents(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
 
@@ -231,7 +231,7 @@ Bool_t DelphesVLQAnalysis::Overlaps(const Jet& jet, const vector<T*>& lepColl, D
 
 template<typename T>
 //DMBool_t DelphesVLQAnalysis::Overlaps2D(const Jet& jet, const vector<T*>& lepColl, Double_t drMax, Double_t ptrelMax)
-Bool_t DelphesVLQAnalysis::Overlaps2D(vector<const Jet*>* jets, const T* lep, Double_t drMax, Double_t ptrelMax)
+Bool_t DelphesVLQAnalysis::Overlaps2D(vector<const Jet*>* jets, const T* lep, Double_t drMax, Double_t ptrelMin)
 {
    Int_t i;
    Bool_t overlaps = false;
@@ -239,157 +239,159 @@ Bool_t DelphesVLQAnalysis::Overlaps2D(vector<const Jet*>* jets, const T* lep, Do
 
    // loop over all jets
    for(i = 0; i < jets->size(); i++){
-      //const Jet* thisjet = jets->at(i);
+
      const Jet* thisjet = static_cast<const Jet*>(jets->at(i));
+
      Float_t dr = thisjet->P4().DeltaR(t->P4());
 
      TVector3 jetp3 = (thisjet->P4()).Vect();
      TVector3 lepp3 = (t->P4()).Vect();
      Float_t dPtRel = (jetp3.Cross( lepp3 )).Mag()/ jetp3.Mag();
 
-     if(dr < drMax || dPtRel < ptrelMax) overlaps = true;
-     delete thisjet;
+     if(dr < drMax && dPtRel < ptrelMin) overlaps = true;
+
+     return 0;
+
    }
-   delete t; 
 
    return overlaps;
 }
 
 template<typename T>
 TLorentzVector DelphesVLQAnalysis::OverlapConstituents(const Jet& jet, const vector<T*>& lepColl, Double_t drMax){
-   
-   jetP4  = jet.P4();
-   const TObject *object, *jobject;
- 
-   // loop over filtered lepton(s)
-   for(int i = 0; i < lepColl.size(); i++){
-     object = lepColl.at(i);
 
-     if(object == 0) continue;
-     const T *t = static_cast<const T*>(object);
-     double lepID = t->GetUniqueID();
-     //partLep = (GenParticle*) t->Particle.GetObject();
-  
-     // Loop over all jet's constituents 
-     Float_t dr(999.), jetID(0.);
-     for(j = 0; j < jet.Constituents.GetEntriesFast(); ++j){
-        jobject = jet.Constituents.At(j);
+  jetP4  = jet.P4();
+  const TObject *object, *jobject;
 
-        if(jobject == 0) continue;      
-        jetID = jobject->GetUniqueID();
- /*
-        if(jobject->IsA() == GenParticle::Class()){
-           partJet = (GenParticle*) jobject;
-           dr = partJet->P4().DeltaR(partLep->P4());
-        }       
-        else if(object->IsA() == Track::Class()){
-           track = (Track*) object;
-           
-           dr = track->P4().DeltaR(partLep->P4());
+  // loop over filtered lepton(s)
+  for(int i = 0; i < lepColl.size(); i++){
+    object = lepColl.at(i);
+
+    if(object == 0) continue;
+    const T *t = static_cast<const T*>(object);
+    double lepID = t->GetUniqueID();
+    //partLep = (GenParticle*) t->Particle.GetObject();
+
+    // Loop over all jet's constituents 
+    Float_t dr(999.), jetID(0.);
+    for(j = 0; j < jet.Constituents.GetEntriesFast(); ++j){
+      jobject = jet.Constituents.At(j);
+
+      if(jobject == 0) continue;      
+      jetID = jobject->GetUniqueID();
+      /*
+         if(jobject->IsA() == GenParticle::Class()){
+         partJet = (GenParticle*) jobject;
+         dr = partJet->P4().DeltaR(partLep->P4());
+         }       
+         else if(object->IsA() == Track::Class()){
+         track = (Track*) object;
+
+         dr = track->P4().DeltaR(partLep->P4());
+         }
+         else if(object->IsA() == Tower::Class()){
+         tower = (Tower*) object;
+         dr = tower->P4().DeltaR(partLep->P4());
+         }
+         */
+      // pick those which matches to lepton
+      //if(dr < drMax) { 
+      if(lepID == jetID){  
+        //cout << "before: "<< jetP4.Pt() <<endl;   
+        if (t->P4().E() >= jetP4.E()){ // force to zero if lepton energy is more than or equal to jet energy
+          jetP4.SetPxPyPzE(0.,0.,0.,0.);
         }
-        else if(object->IsA() == Tower::Class()){
-           tower = (Tower*) object;
-           dr = tower->P4().DeltaR(partLep->P4());
+        else {
+          jetP4 -= t->P4(); // else correct jet P4
         }
-*/
-       // pick those which matches to lepton
-        //if(dr < drMax) { 
-        if(lepID == jetID){  
-           //cout << "before: "<< jetP4.Pt() <<endl;   
-           if (t->P4().E() >= jetP4.E()){ // force to zero if lepton energy is more than or equal to jet energy
-              jetP4.SetPxPyPzE(0.,0.,0.,0.);
-           }
-           else {
-              jetP4 -= t->P4(); // else correct jet P4
-           }
-           //cout << "after: "<< jetP4.Pt() <<endl;
-           break;
-        }
+        //cout << "after: "<< jetP4.Pt() <<endl;
+        break;
+      }
 
-     }//for constituents
-     break;// assuming only one lepton
-   }
-   return jetP4;
-}
+    }//for constituents
+    break;// assuming only one lepton
+    }
+    return jetP4;
+  }
 
-bool DelphesVLQAnalysis::SolveNuPz(const TLorentzVector &vlep, const TLorentzVector &vnu, double wmass, double& nuz1, double& nuz2){
-   bool discrimFlag = true;
-   double x = vlep.X()*vnu.X() + vlep.Y()*vnu.Y() + wmass*wmass/2;
-   double a = vlep.Z()*vlep.Z() - vlep.E()*vlep.E();
-   double b = 2*x*vlep.Z();
-   double c = x*x - vnu.Perp2() * vlep.E()*vlep.E();
-   double d = b*b - 4*a*c;
+  bool DelphesVLQAnalysis::SolveNuPz(const TLorentzVector &vlep, const TLorentzVector &vnu, double wmass, double& nuz1, double& nuz2){
+    bool discrimFlag = true;
+    double x = vlep.X()*vnu.X() + vlep.Y()*vnu.Y() + wmass*wmass/2;
+    double a = vlep.Z()*vlep.Z() - vlep.E()*vlep.E();
+    double b = 2*x*vlep.Z();
+    double c = x*x - vnu.Perp2() * vlep.E()*vlep.E();
+    double d = b*b - 4*a*c;
 
-   if (d < 0){
+    if (d < 0){
       d = 0; discrimFlag = false;
-   }
-   nuz1 = (-b + sqrt(d))/2/a;
-   nuz2 = (-b - sqrt(d))/2/a;
-   if (abs(nuz1) > abs(nuz2)){
+    }
+    nuz1 = (-b + sqrt(d))/2/a;
+    nuz2 = (-b - sqrt(d))/2/a;
+    if (abs(nuz1) > abs(nuz2)){
       swap (nuz1, nuz2);
-   }
-   return discrimFlag;
-}
+    }
+    return discrimFlag;
+  }
 
-// Adjust the energy component of V (leaving the 3-vector part unchanged).
-void DelphesVLQAnalysis::AdjustEnergyForMass(TLorentzVector& v, double mass){
-   v.SetE(sqrt(v.Vect().Mag2() + mass*mass));
-}
+  // Adjust the energy component of V (leaving the 3-vector part unchanged).
+  void DelphesVLQAnalysis::AdjustEnergyForMass(TLorentzVector& v, double mass){
+    v.SetE(sqrt(v.Vect().Mag2() + mass*mass));
+  }
 
-void DelphesVLQAnalysis::h1D(const char* name, const char* title,
-                     const char* xTitle, const char* yTitle,
-                     Int_t       nBinsX, Double_t    xLow, Double_t xUp){
-   TH1F* h = new TH1F(name, title, nBinsX, xLow, xUp);
-   h->GetXaxis()->SetTitle(xTitle);
-   h->GetYaxis()->SetTitle(yTitle);
-   h->Sumw2();
-   hName[name] = h;
-}
+  void DelphesVLQAnalysis::h1D(const char* name, const char* title,
+      const char* xTitle, const char* yTitle,
+      Int_t       nBinsX, Double_t    xLow, Double_t xUp){
+    TH1F* h = new TH1F(name, title, nBinsX, xLow, xUp);
+    h->GetXaxis()->SetTitle(xTitle);
+    h->GetYaxis()->SetTitle(yTitle);
+    h->Sumw2();
+    hName[name] = h;
+  }
 
-void DelphesVLQAnalysis::h1D(const char* name, const char* title,
-                     const char* xTitle, const char* yTitle,
-                     Int_t       nBinsX, const Float_t* xBins)
-{
-   TH1F* h = new TH1F(name, title, nBinsX, xBins);
-   h->GetXaxis()->SetTitle(xTitle);
-   h->GetYaxis()->SetTitle(yTitle);
-   h->Sumw2();
-   hName[name] = h;
-}
+  void DelphesVLQAnalysis::h1D(const char* name, const char* title,
+      const char* xTitle, const char* yTitle,
+      Int_t       nBinsX, const Float_t* xBins)
+  {
+    TH1F* h = new TH1F(name, title, nBinsX, xBins);
+    h->GetXaxis()->SetTitle(xTitle);
+    h->GetYaxis()->SetTitle(yTitle);
+    h->Sumw2();
+    hName[name] = h;
+  }
 
-void DelphesVLQAnalysis::h2D(const char* name,   const char* title,
-                     const char* xTitle, const char* yTitle,
-                     Int_t nBinsX, Double_t xLow, Double_t xUp,
-                     Int_t nBinsY,Double_t yLow, Double_t yUp){
-   TH2F* h = new TH2F(name, title, nBinsX, xLow, xUp, nBinsY, yLow, yUp);
-   h->GetXaxis()->SetTitle(xTitle);
-   h->GetYaxis()->SetTitle(yTitle);
-   h->Sumw2();
-   hName2D[name] = h;
-}
+  void DelphesVLQAnalysis::h2D(const char* name,   const char* title,
+      const char* xTitle, const char* yTitle,
+      Int_t nBinsX, Double_t xLow, Double_t xUp,
+      Int_t nBinsY,Double_t yLow, Double_t yUp){
+    TH2F* h = new TH2F(name, title, nBinsX, xLow, xUp, nBinsY, yLow, yUp);
+    h->GetXaxis()->SetTitle(xTitle);
+    h->GetYaxis()->SetTitle(yTitle);
+    h->Sumw2();
+    hName2D[name] = h;
+  }
 
-void DelphesVLQAnalysis::h1P(const char* name,   const char* title,
-         const char* xTitle, const char* yTitle,
-         Int_t       nBinsX, Double_t    xLow, Double_t xUp){
-   TProfile* pr = new TProfile(name, title, nBinsX, xLow, xUp);
-   pr->GetXaxis()->SetTitle(xTitle);
-   pr->GetYaxis()->SetTitle(yTitle);
-   prName[name] = pr;
-}
+  void DelphesVLQAnalysis::h1P(const char* name,   const char* title,
+      const char* xTitle, const char* yTitle,
+      Int_t       nBinsX, Double_t    xLow, Double_t xUp){
+    TProfile* pr = new TProfile(name, title, nBinsX, xLow, xUp);
+    pr->GetXaxis()->SetTitle(xTitle);
+    pr->GetYaxis()->SetTitle(yTitle);
+    prName[name] = pr;
+  }
 
-void DelphesVLQAnalysis::writeHisto(){
-   outFile->cd();
-   for (std::map<TString,TH1F*>::iterator it=hName.begin(); it!=hName.end(); it++) {
+  void DelphesVLQAnalysis::writeHisto(){
+    outFile->cd();
+    for (std::map<TString,TH1F*>::iterator it=hName.begin(); it!=hName.end(); it++) {
       hName[it->first]->Write();
-   }
-   for (std::map<TString,TH2F*>::iterator it=hName2D.begin(); it!=hName2D.end(); it++){
+    }
+    for (std::map<TString,TH2F*>::iterator it=hName2D.begin(); it!=hName2D.end(); it++){
       hName2D[it->first]->Write();
-   }
-   for (std::map<TString, TProfile*>::iterator it=prName.begin(); it!=prName.end(); it++){
+    }
+    for (std::map<TString, TProfile*>::iterator it=prName.begin(); it!=prName.end(); it++){
       prName[it->first]->Write();
-   }
-   outFile->Close();
-   delete outFile;
-}
-          
+    }
+    outFile->Close();
+    delete outFile;
+  }
+
 
