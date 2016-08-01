@@ -236,40 +236,45 @@ TLorentzVector DelphesVLQAnalysis::OverlapConstituents(const Jet& jet, const vec
    // loop over filtered lepton(s)
    for(int i = 0; i < lepColl.size(); i++){
      object = lepColl.at(i);
-     
+
+     if(object == 0) continue;
      const T *t = static_cast<const T*>(object);
-     partLep = (GenParticle*) t->Particle.GetObject();
-     
-    
+     double lepID = t->GetUniqueID();
+     //partLep = (GenParticle*) t->Particle.GetObject();
+  
      // Loop over all jet's constituents 
-     Float_t dr(999.);
+     Float_t dr(999.), jetID(0.);
      for(j = 0; j < jet.Constituents.GetEntriesFast(); ++j){
         jobject = jet.Constituents.At(j);
 
-        if(jobject == 0) continue;
-
-        // pick those which are close to gen lepton
+        if(jobject == 0) continue;      
+        jetID = jobject->GetUniqueID();
+ /*
         if(jobject->IsA() == GenParticle::Class()){
            partJet = (GenParticle*) jobject;
            dr = partJet->P4().DeltaR(partLep->P4());
-        }
-        /*
+        }       
         else if(object->IsA() == Track::Class()){
            track = (Track*) object;
+           
            dr = track->P4().DeltaR(partLep->P4());
         }
         else if(object->IsA() == Tower::Class()){
            tower = (Tower*) object;
            dr = tower->P4().DeltaR(partLep->P4());
         }
-        */
-        if(dr < drMax) {      
+*/
+       // pick those which matches to lepton
+        //if(dr < drMax) { 
+        if(lepID == jetID){  
+           //cout << "before: "<< jetP4.Pt() <<endl;   
            if (t->P4().E() >= jetP4.E()){ // force to zero if lepton energy is more than or equal to jet energy
               jetP4.SetPxPyPzE(0.,0.,0.,0.);
            }
            else {
               jetP4 -= t->P4(); // else correct jet P4
            }
+           //cout << "after: "<< jetP4.Pt() <<endl;
            break;
         }
 

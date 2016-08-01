@@ -81,9 +81,10 @@ void DelphesVLQAnalysis::Loop(){
          
          if (jetP4Raw.Pt() == 0) continue;
 
-         //reset jet P4            
+         //reset jet P4 
+         //cout<< "before " << jetP4.Pt() <<","<<jetP4.Eta()<<","<<jetP4.Phi()<<","<<jetP4.E()<<endl;         
          jetP4.SetPtEtaPhiE(jetP4Raw.Pt(), jetP4Raw.Eta(), jetP4Raw.Phi(), jetP4Raw.E());
-
+         //cout<< "after " << jetP4.Pt() <<","<<jetP4.Eta()<<","<<jetP4.Phi()<<","<<jetP4.E() <<endl;
          // do sort out jets w.r.t pt later? 
 
          // ---------------------------------------------------------------
@@ -117,7 +118,7 @@ void DelphesVLQAnalysis::Loop(){
       hName2D["h2DdPtRelDRMin"]->Fill(dRMin, dPtRel, evtwt);
 
       // 3 - dPtRel >= 40? May be too tight?
-      if (dPtRel < 10. && dRMin < 0.4) continue;
+      if (dPtRel < 10. && dRMin < 0.1) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt); 
 
@@ -231,7 +232,7 @@ void DelphesVLQAnalysis::Loop(){
       }
       
   
-      
+      //cout << "next event " << endl;   
    }//event loop
    writeHisto();
 
