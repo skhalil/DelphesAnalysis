@@ -35,8 +35,8 @@ void DelphesVLQAnalysis::Loop(){
       met = (MissingET*)branchMissingET->At(0);
       
       // Select leptons with pT, |eta|, and Iso cuts
-      CollectionFilter(*branchElectron,  *electrons , 30.0 , 4.0, 0.1);//100.
-      CollectionFilter(*branchMuonTight, *muons     , 30.0 , 4.0, 0.1);//100.
+      CollectionFilter(*branchElectron,  *electrons , 30.0 , 4.0, 100.);//100.
+      CollectionFilter(*branchMuonTight, *muons     , 30.0 , 4.0, 100.);//100.
       
       // 2 - N ele or muon >= 1
       if (electrons->size() + muons->size() != 1) continue;
