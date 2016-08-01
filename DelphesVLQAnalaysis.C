@@ -95,8 +95,6 @@ void DelphesVLQAnalysis::Loop(){
          //traditional jet cleaning for isolated jets
          //DMif(Overlaps(*jet, *electrons, 0.4))   continue;
          //DMif(Overlaps(*jet, *muons, 0.4))       continue;
-         if(Overlaps2D(*jet, *electrons, 0.4, 60.)) continue;
-         if(Overlaps2D(*jet, *muons    , 0.4, 60.)) continue;
 
 
          //find the min_dR(l,j)
@@ -119,8 +117,11 @@ void DelphesVLQAnalysis::Loop(){
       prName["prPtRelDRMin"]->Fill(ptRel, dRMin, evtwt);
       hName2D["h2DdPtRelDRMin"]->Fill(dRMin, dPtRel, evtwt);
 
+      if(Overlaps2D(goodjets, ele1, 0.4, 30.)) continue;
+      if(Overlaps2D(goodjets, mu1 , 0.4, 30.)) continue;
+
       // 3 - dPtRel >= 40? May be too tight?
-      if (dPtRel < 10. && dRMin < 0.1) continue;
+      //DMif (dPtRel < 10. && dRMin < 0.1) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt); 
 

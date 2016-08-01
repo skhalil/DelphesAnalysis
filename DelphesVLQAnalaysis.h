@@ -229,26 +229,27 @@ Bool_t DelphesVLQAnalysis::Overlaps(const Jet& jet, const vector<T*>& lepColl, D
 }
 
 template<typename T>
-Bool_t DelphesVLQAnalysis::Overlaps2D(const Jet& jet, const vector<T*>& lepColl, Double_t drMax, Double_t ptrelMax)
+//DMBool_t DelphesVLQAnalysis::Overlaps2D(const Jet& jet, const vector<T*>& lepColl, Double_t drMax, Double_t ptrelMax)
+Bool_t DelphesVLQAnalysis::Overlaps2D(const vector<Jet*> jets, const T* lep, Double_t drMax, Double_t ptrelMax)
 {
    Int_t i;
    Bool_t overlaps = false;
-   Float_t dr;
+   const T *t = static_cast<const T*>(lep);
 
-   const TObject *object;
-   // loop over filtered electrons
-   for(i = 0; i < lepColl.size(); i++){
-     object = lepColl.at(i);
+   // loop over all jets
+   for(i = 0; i < jets.size(); i++){
+     Jet* thisjet = jets.at(i);
  
-     const T *t = static_cast<const T*>(object);
-     dr = jet.P4().DeltaR(t->P4());
+     Float_t dr = thisjet->P4().DeltaR(t->P4());
 
-     TVector3 jetp3 = (jet.P4()).Vect();
+     TVector3 jetp3 = (thisjet->P4()).Vect();
      TVector3 lepp3 = (t->P4()).Vect();
      Float_t dPtRel = (jetp3.Cross( lepp3 )).Mag()/ jetp3.Mag();
 
      if(dr < drMax || dPtRel < ptrelMax) overlaps = true;
+     delete thisjet;
    }
+   delete t; 
 
    return overlaps;
 }
