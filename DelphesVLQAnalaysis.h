@@ -50,8 +50,9 @@ public:
    const MissingET *met;
    const Electron *elec, *ele1;
    const Muon *muon, *mu1;
-   const Jet *jet, *jet1, *bjet, *ak8jet;
-   
+   const Jet *jet, *corrJet, *jet1, *bjet, *ak8jet;
+   const GenParticle *partLep, *partEle, *partMu, *partJet;   
+  
    TClonesArray *branchEvent;
    TClonesArray *branchElectron;
    TClonesArray *branchMuonTight;
@@ -59,6 +60,8 @@ public:
    TClonesArray *branchJetAK8;
    TClonesArray *branchScalarHT;
    TClonesArray *branchMissingET;
+   TClonesArray *branchParticle;
+   TClonesArray *branchGenJet;
 
    vector<const Electron*>   *electrons = new vector<const Electron*>();
    vector<const Muon*>           *muons = new vector<const Muon*>();
@@ -67,6 +70,8 @@ public:
    vector<const Jet*>            *bjets = new vector<const Jet*>();
    vector<const Jet*>            *fjets = new vector<const Jet*>();
    vector<const Jet*>          *ak8jets = new vector<const Jet*>();
+
+   
 
    DelphesVLQAnalysis();
    ~DelphesVLQAnalysis();
@@ -78,11 +83,14 @@ public:
    void CollectionFilter(const TClonesArray& inColl, vector<T*>& outColl, Double_t ptMin, Double_t etaMax, Double_t isoMax);
    template<typename T>
    Bool_t Overlaps(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
-   
-   //void JetCollectionFilter(const TClonesArray& branchJet,  vector<const Electron*>& electrons, vector<const Muon*>& muons,  
-   //                         vector<const Jet*>& jets, vector<const Jet*>& fjets, 
-   //                         Double_t jetPtMin, Double_t jetPtaMax, Double_t coneSize, Double_t jetdRMin, Double_t jetEtaFwd);
-   TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4;   
+   template<typename T>
+   TLorentzVector OverlapConstituents(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
+
+   bool SolveNuPz(const TLorentzVector &vlep, const TLorentzVector &vnu, double wmass, double& nuz1, double& nuz2);
+   void AdjustEnergyForMass(TLorentzVector& v, double mass);
+
+   TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4, jetP4Raw, jetP4,
+                  nuP4;   
    //book histo
    void bookHisto(); 
    std::map<TString, TH1F*> hName;
@@ -136,6 +144,8 @@ void DelphesVLQAnalysis::Init(const char *inString, const char *outFileName){
    branchJetAK8                = treeReader->UseBranch("JetAK8");
    branchScalarHT              = treeReader->UseBranch("ScalarHT");
    branchMissingET             = treeReader->UseBranch("MissingET");
+   branchParticle              = treeReader->UseBranch("Particle");
+   branchGenJet                = treeReader->UseBranch("GenJet");
    
    bookHisto();
 
@@ -192,7 +202,7 @@ void DelphesVLQAnalysis::CollectionFilter(const TClonesArray& inColl ,vector<T*>
       const T *t = static_cast<const T*>(object);
       if(t->P4().Pt() < ptMin) continue;
       if(TMath::Abs(t->P4().Eta()) > etaMax) continue;
-      if(t->IsolationVar > isoMax) continue;
+      if(t->IsolationVarRhoCorr > isoMax) continue;
       outColl.push_back(t);
    }
 }
@@ -216,49 +226,83 @@ Bool_t DelphesVLQAnalysis::Overlaps(const Jet& jet, const vector<T*>& lepColl, D
 
    return overlaps;
 }
-/*
-void JetCollectionFilter(const TClonesArray& branchJet,  vector<const Electron*>& electrons, vector<const Muon*>& muons,  
-                         vector<const Jet*>& jets, vector<const Jet*>& fjets, 
-                         Double_t jetPtMin, Double_t jetEtaMax, Double_t coneSize, Double_t jetdRMin, Double_t jetEtaFwd){
+
+template<typename T>
+TLorentzVector DelphesVLQAnalysis::OverlapConstituents(const Jet& jet, const vector<T*>& lepColl, Double_t drMax){
    
-   Double_t dR(-100.0),dRMin(999.0);
-   Double_t eta(999.0), etaMax(0.0);
+   jetP4  = jet.P4();
+   const TObject *object, *jobject;
+ 
+   // loop over filtered lepton(s)
+   for(int i = 0; i < lepColl.size(); i++){
+     object = lepColl.at(i);
+     
+     const T *t = static_cast<const T*>(object);
+     partLep = (GenParticle*) t->Particle.GetObject();
+     
+    
+     // Loop over all jet's constituents 
+     Float_t dr(999.);
+     for(j = 0; j < jet.Constituents.GetEntriesFast(); ++j){
+        jobject = jet.Constituents.At(j);
 
-   for (Int_t i = 0; i < branchJet.GetEntriesFast(); i++){
-      jet = (Jet*)branchJet.At(i);
-      if(jet->P4().Pt() < jetPtMin)             continue;
-      if(TMath::Abs(eta) > jetEtaMax)           continue;
-      
-      //traditional jet cleaning for non-isolated jets
-      if(Overlaps(*jet, electrons, coneSize))   continue;
-      //if(Overlaps(*jet, *muons, coneSize))       continue;
-      
-      //store two jet collections: central and forward
-      if(TMath::Abs(eta) < 2.4) {
-         jets.push_back(jet);
-      }
-      else {
-         fjets.push_back(jet);
-         if (TMath::Abs(eta) > TMath::Abs(etaMax)){
-            mostForwardJetP4 = jet->P4();
-            etaMax = eta;
-         }
-      }//obtain the maximum forward jet eta
-      
-      //find the nearest dR of a jet to the lepton after cleaning
-      dR = jet->P4().DeltaR(leptonP4);
-      if (dR < dRMin){
-         nearestJetP4 = jet->P4();
-         dRMin = dR;
-      }
-      cout << "dR = " << dR << endl;
-      cout << "jet max eta = " << etaMax <<endl;
+        if(jobject == 0) continue;
 
-   }//jet loop
-   jetdRMin = dRMin;
-   jetEtaFwd = etaMax;
+        // pick those which are close to gen lepton
+        if(jobject->IsA() == GenParticle::Class()){
+           partJet = (GenParticle*) jobject;
+           dr = partJet->P4().DeltaR(partLep->P4());
+        }
+        /*
+        else if(object->IsA() == Track::Class()){
+           track = (Track*) object;
+           dr = track->P4().DeltaR(partLep->P4());
+        }
+        else if(object->IsA() == Tower::Class()){
+           tower = (Tower*) object;
+           dr = tower->P4().DeltaR(partLep->P4());
+        }
+        */
+        if(dr < drMax) {      
+           if (t->P4().E() >= jetP4.E()){ // force to zero if lepton energy is more than or equal to jet energy
+              jetP4.SetPxPyPzE(0.,0.,0.,0.);
+           }
+           else {
+              jetP4 -= t->P4(); // else correct jet P4
+           }
+           break;
+        }
+
+     }//for constituents
+     break;// assuming only one lepton
+   }
+   return jetP4;
 }
-*/
+
+bool DelphesVLQAnalysis::SolveNuPz(const TLorentzVector &vlep, const TLorentzVector &vnu, double wmass, double& nuz1, double& nuz2){
+   bool discrimFlag = true;
+   double x = vlep.X()*vnu.X() + vlep.Y()*vnu.Y() + wmass*wmass/2;
+   double a = vlep.Z()*vlep.Z() - vlep.E()*vlep.E();
+   double b = 2*x*vlep.Z();
+   double c = x*x - vnu.Perp2() * vlep.E()*vlep.E();
+   double d = b*b - 4*a*c;
+
+   if (d < 0){
+      d = 0; discrimFlag = false;
+   }
+   nuz1 = (-b + sqrt(d))/2/a;
+   nuz2 = (-b - sqrt(d))/2/a;
+   if (abs(nuz1) > abs(nuz2)){
+      swap (nuz1, nuz2);
+   }
+   return discrimFlag;
+}
+
+// Adjust the energy component of V (leaving the 3-vector part unchanged).
+void DelphesVLQAnalysis::AdjustEnergyForMass(TLorentzVector& v, double mass){
+   v.SetE(sqrt(v.Vect().Mag2() + mass*mass));
+}
+
 void DelphesVLQAnalysis::h1D(const char* name, const char* title,
                      const char* xTitle, const char* yTitle,
                      Int_t       nBinsX, Double_t    xLow, Double_t xUp){
