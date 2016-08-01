@@ -83,6 +83,7 @@ public:
    void CollectionFilter(const TClonesArray& inColl, vector<T*>& outColl, Double_t ptMin, Double_t etaMax, Double_t isoMax);
    template<typename T>
    Bool_t Overlaps(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
+   Bool_t Overlaps2D(const Jet& jet, const vector<T*>& lepColl, Double_t drMax, Double_t ptrel);
    template<typename T>
    TLorentzVector OverlapConstituents(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
 
@@ -223,6 +224,32 @@ Bool_t DelphesVLQAnalysis::Overlaps(const Jet& jet, const vector<T*>& lepColl, D
      dr = jet.P4().DeltaR(t->P4());
      if(dr < drMax) overlaps = true;
    }
+
+   return overlaps;
+}
+
+template<typename T>
+//DMBool_t DelphesVLQAnalysis::Overlaps2D(const Jet& jet, const vector<T*>& lepColl, Double_t drMax, Double_t ptrelMax)
+Bool_t DelphesVLQAnalysis::Overlaps2D(const vector<Jet*> jets, const T* lep, Double_t drMax, Double_t ptrelMax)
+{
+   Int_t i;
+   Bool_t overlaps = false;
+   const T *t = static_cast<const T*>(lep);
+
+   // loop over all jets
+   for(i = 0; i < jets.size(); i++){
+     Jet* thisjet = jets.at(i);
+ 
+     Float_t dr = thisjet->P4().DeltaR(t->P4());
+
+     TVector3 jetp3 = (thisjet->P4()).Vect();
+     TVector3 lepp3 = (t->P4()).Vect();
+     Float_t dPtRel = (jetp3.Cross( lepp3 )).Mag()/ jetp3.Mag();
+
+     if(dr < drMax || dPtRel < ptrelMax) overlaps = true;
+     delete thisjet;
+   }
+   delete t; 
 
    return overlaps;
 }
