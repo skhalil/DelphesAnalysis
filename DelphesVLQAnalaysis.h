@@ -83,7 +83,7 @@ public:
    void CollectionFilter(const TClonesArray& inColl, vector<T*>& outColl, Double_t ptMin, Double_t etaMax, Double_t isoMax);
    template<typename T>
    Bool_t Overlaps(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
-   Bool_t Overlaps2D(const Jet& jet, const vector<T*>& lepColl, Double_t drMax, Double_t ptrel);
+   Bool_t Overlaps2D(const vector<Jet*> jets, const T* lep, Double_t drMax, Double_t ptrelMax);
    template<typename T>
    TLorentzVector OverlapConstituents(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
 
