@@ -84,7 +84,8 @@ public:
    template<typename T>
    Bool_t Overlaps(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
    template<typename T>
-   Bool_t Overlaps2D(vector<const Jet*>* jets, const T* lep, Double_t drMax, Double_t ptrelMin);
+   //SKBool_t Overlaps2D(vector<const Jet*>* jets, const T* lep, Double_t drMax, Double_t ptrelMin);
+   Bool_t Overlaps2D(vector<const Jet*> &jets, const T* lep, Double_t drMax, Double_t ptrelMin);
    template<typename T>
    TLorentzVector OverlapConstituents(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
 
@@ -92,7 +93,8 @@ public:
    void AdjustEnergyForMass(TLorentzVector& v, double mass);
 
    TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4, jetP4Raw, jetP4,
-                  nuP4;   
+                  nuP4; 
+   
    //book histo
    void bookHisto(); 
    std::map<TString, TH1F*> hName;
@@ -230,30 +232,24 @@ Bool_t DelphesVLQAnalysis::Overlaps(const Jet& jet, const vector<T*>& lepColl, D
 }
 
 template<typename T>
-//DMBool_t DelphesVLQAnalysis::Overlaps2D(const Jet& jet, const vector<T*>& lepColl, Double_t drMax, Double_t ptrelMax)
-Bool_t DelphesVLQAnalysis::Overlaps2D(vector<const Jet*>* jets, const T* lep, Double_t drMax, Double_t ptrelMin)
+Bool_t DelphesVLQAnalysis::Overlaps2D(vector<const Jet*> &jets, const T* lep, Double_t drMax, Double_t ptrelMin)
 {
    Int_t i;
    Bool_t overlaps = false;
    const T *t = static_cast<const T*>(lep);
 
    // loop over all jets
-   for(i = 0; i < jets->size(); i++){
+   for(i = 0; i < jets.size(); i++){
 
-     const Jet* thisjet = static_cast<const Jet*>(jets->at(i));
-
-     Float_t dr = thisjet->P4().DeltaR(t->P4());
-
-     TVector3 jetp3 = (thisjet->P4()).Vect();
+     Float_t dr = jets.at(i)->P4().DeltaR(t->P4());
+     TVector3 jetp3 = (jets.at(i)->P4()).Vect();
      TVector3 lepp3 = (t->P4()).Vect();
      Float_t dPtRel = (jetp3.Cross( lepp3 )).Mag()/ jetp3.Mag();
-
-     if(dr < drMax && dPtRel < ptrelMin) overlaps = true;
-
-     return 0;
+    
+     if(dr < drMax && dPtRel < ptrelMin) overlaps = true;    
+     break;
 
    }
-
    return overlaps;
 }
 
@@ -274,7 +270,7 @@ TLorentzVector DelphesVLQAnalysis::OverlapConstituents(const Jet& jet, const vec
 
     // Loop over all jet's constituents 
     Float_t dr(999.), jetID(0.);
-    for(j = 0; j < jet.Constituents.GetEntriesFast(); ++j){
+    for(int j = 0; j < jet.Constituents.GetEntriesFast(); ++j){
       jobject = jet.Constituents.At(j);
 
       if(jobject == 0) continue;      

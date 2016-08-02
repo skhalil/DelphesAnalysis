@@ -12,12 +12,14 @@ void DelphesVLQAnalysis::Loop(){
       
       if(entry%1000 == 0) cout << entry << endl;
       ntot++;
-      //if (ntot > 1000) break;
+      //if (ntot > 2000) break;
       ncut = 0;
       treeReader->ReadEntry(entry);
       
       HepMCEvent *event = (HepMCEvent*)  branchEvent->At(0);
       double evtwt = event->Weight;
+       
+      hName["hNGenEvents"]->Fill(1);
 
       electrons -> clear();
       muons     -> clear();
@@ -55,50 +57,32 @@ void DelphesVLQAnalysis::Loop(){
          lepIso = mu1->IsolationVarRhoCorr;
       }
       
-      Float_t dR(-100.0),dRMin(999.0);
+      Float_t dR(900.0),dRMin(999.0), delPtRel(999.0);
       Float_t eta(999.0);
-      
+      TVector3 jetp3, lepp3;
       // Apply jet cleaning 
       for(i = 0; i < branchJet->GetEntriesFast(); i++){
          jet = (Jet*)branchJet->At(i);
          jetP4 = jet->P4();  
          eta = jetP4.Eta();
-         /*
-         // -------------------- under development ------------------------
-         // if reconstructed jet and lepton are close by, go deep to see if 
-         // the jet consitutuents match with lepton and correct the jet P4
-         // --------------------------------------------------------------- 
 
-         if(electrons->size() > 0  && (Overlaps(*jet, *electrons, 0.4)) ){
-            jetP4Raw = OverlapConstituents(*jet, *electrons, 0.4);
-         }
-         else if (muons->size() > 0  && (Overlaps(*jet, *muons, 0.4)) ){
-            jetP4Raw = OverlapConstituents(*jet, *muons, 0.4);
-         }
-         else{
-            jetP4Raw.SetPtEtaPhiE(jetP4.Pt(),jetP4.Eta(),jetP4.Phi(),jetP4.E());
-         }
-         
-         if (jetP4Raw.Pt() == 0) continue;
-
-         //reset jet P4 
-         //cout<< "before " << jetP4.Pt() <<","<<jetP4.Eta()<<","<<jetP4.Phi()<<","<<jetP4.E()<<endl;         
-         jetP4.SetPtEtaPhiE(jetP4Raw.Pt(), jetP4Raw.Eta(), jetP4Raw.Phi(), jetP4Raw.E());
-         //cout<< "after " << jetP4.Pt() <<","<<jetP4.Eta()<<","<<jetP4.Phi()<<","<<jetP4.E() <<endl;
-         // do sort out jets w.r.t pt later? 
-
-         // ---------------------------------------------------------------
-         */
          if(jetP4.Pt() < 30.0)                 continue;
          if(TMath::Abs(eta) > 5.0)             continue;
         
          //traditional jet cleaning for isolated jets
          //DMif(Overlaps(*jet, *electrons, 0.4))   continue;
          //DMif(Overlaps(*jet, *muons, 0.4))       continue;
+         
+         dR = jetP4.DeltaR(leptonP4);
+         hName["hDR"]->Fill(dR, evtwt);
 
+         jetp3 = (jet->P4()).Vect();
+         lepp3 = leptonP4.Vect(); 
+         delPtRel = (jetp3.Cross( lepp3 )).Mag()/ jetp3.Mag();
+         hName["hDelPtRel"]->Fill(delPtRel, evtwt);
+         hName2D["h2DdPtReldR"]->Fill(dR, delPtRel, evtwt);
 
          //find the min_dR(l,j)
-         dR = jetP4.DeltaR(leptonP4);
          if (dR < dRMin){
             nearestJetP4 = jetP4;
             dRMin = dR;
@@ -117,11 +101,10 @@ void DelphesVLQAnalysis::Loop(){
       prName["prPtRelDRMin"]->Fill(ptRel, dRMin, evtwt);
       hName2D["h2DdPtRelDRMin"]->Fill(dRMin, dPtRel, evtwt);
 
-      if(Overlaps2D(goodjets, ele1, 0.4, 30.)) continue;
-      if(Overlaps2D(goodjets, mu1 , 0.4, 30.)) continue;
-
-      // 3 - dPtRel >= 40? May be too tight?
-      //DMif (dPtRel < 10. && dRMin < 0.1) continue;
+      // 3 - dPtRel >= 30 || dRMin > 0.4
+      if(Overlaps2D(*goodjets, ele1, 0.4, 30.)) continue;
+      if(Overlaps2D(*goodjets, mu1 , 0.4, 30.)) continue;
+      //DMif (dPtRel < 30. && dRMin < 0.4) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt); 
 
@@ -244,7 +227,7 @@ void DelphesVLQAnalysis::Loop(){
    cout<<""<<endl;
    cout<<"1) All events            :  "<<hName["hEff"]->GetBinContent(1)<<endl;
    cout<<"2) Exactly 1 lepton      :  "<<hName["hEff"]->GetBinContent(2)<<endl;
-   cout<<"3) #Delta p_{T,rel}      :  "<<hName["hEff"]->GetBinContent(3)<<endl;
+   cout<<"3) 2D cut                :  "<<hName["hEff"]->GetBinContent(3)<<endl;
    cout<<"4) >= 1 fwd jet          :  "<<hName["hEff"]->GetBinContent(4)<<endl;
    cout<<"5) >= 3 cent jets        :  "<<hName["hEff"]->GetBinContent(5)<<endl;
    cout<<"6) 1st jet pt            :  "<<hName["hEff"]->GetBinContent(6)<<endl;
@@ -265,7 +248,7 @@ void DelphesVLQAnalysis::bookHisto(){
    const int nCuts = 10;
    const char *cuts[nCuts] = {"Total", 
                               "== 1 lep", 
-                              "#Delta p_{T,rel} > 10",
+                              "#Delta p_{T,rel} > 30 && #Delta R_{min}(l, jet) > 0.4",
                               "N(fwd jet) #geq 1", 
                               "N(jet) #geq 3", 
                               "leading jet pt > 100", 
@@ -274,15 +257,19 @@ void DelphesVLQAnalysis::bookHisto(){
                               "MET #geq 30", 
                               "S_{T} #geq 600"};
    for (int i=1;i<=nCuts;i++) hName["hEff"]->GetXaxis()->SetBinLabel(i,cuts[i-1]);
-
+  
+   h1D("hNGenEvents", "total events", "total events", "Events", 2, 0.5, 2.5) ;
    h1D("hLepIso", "LepIso", "LepIso", "Events", 200, 0, 5);
    h1D("hLepPt", "p_{T}(e/#mu)", "p_{T}(e/#mu) [GeV]", "Events/20 GeV", 50, 0.0,400.0);
    h1D("hLepEta", "#eta(e/#mu)", "#eta(e/#mu)", "Events", 40, -5.0,5.0);
-   h1D("hDRMin", "#Delta R_{MIN}", "#Delta R_{MIN}(l,j)", "Events", 30, 0.0,3.0);
+   h1D("hDRMin", "#Delta R_{MIN}(l, jet)", "#Delta R_{MIN}(l,jet)", "Events", 30, 0.0,3.0);
+   h1D("hDR", "#DeltaR(l, jet)", "#Delta R(l,jet)", "Events", 30, 0.0,3.0);
    h1D("hPtRel", "p_{T}^{REL}","p_{T}^{REL} [GeV]", "Events/20 GeV", 50, 0, 100);
    h1D("hDPtRel", "#Delta p_{T}^{REL}","#Delta p_{T}^{REL} [GeV]", "Events/20 GeV", 50, 0, 100);
+   h1D("hDelPtRel", "#Delta p_{T}^{REL}","#Delta p_{T}^{REL} [GeV]", "Events/20 GeV", 50, 0, 100);
    h1P("prPtRelDRMin", "p_{T}^{REL}", "p_{T}^{REL} (#Delta R_{MIN}(l,j) ) [GeV]", "Events/2 [GeV]", 50, 0, 100); 
-   h2D("h2DdPtRelDRMin", "h2DdPtRelDRMin", "#Delta R_{MIN}(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 25., 0., 500.);
+   h2D("h2DdPtRelDRMin", "h2DdPtRelDRMin", "#Delta R_{MIN}(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 20., 0., 200.);
+   h2D("h2DdPtReldR", "h2DdPtReldR", "#Delta R(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 20., 0., 200.);
    h1D("hForwardJetPt", "FwdJetPt", "FwdJetPt [GeV}", "Events/100 GeV", 60, 0, 600);
    h1D("hForwardJetEta","hForwardJetEta", "#eta(MostFwdjet)", "#eta(MostFwdjet)", 50, -5.0, 5.0);
    h1D("hNFJets", "hNFJets", "nfFwdJets", "nfFwdJets", 4, 0.5, 4.5);

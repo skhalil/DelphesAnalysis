@@ -21,7 +21,6 @@
 
 ## test run
 
-    cd DelphesAnalysis
     root -l DelphesAnalysis/RunAnalyzer.C'("DelphesAnalysis/FileLists/tt-4p-0-600_200PU_1.txt", "test")'
 
 ## to run over full samples using condor
