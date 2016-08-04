@@ -12,7 +12,7 @@ void DelphesVLQAnalysis::Loop(){
       
       if(entry%1000 == 0) cout << entry << endl;
       ntot++;
-      //if (ntot > 2000) break;
+      //if (ntot > 100) break;
       ncut = 0;
       treeReader->ReadEntry(entry);
       
@@ -102,8 +102,9 @@ void DelphesVLQAnalysis::Loop(){
       hName2D["h2DdPtRelDRMin"]->Fill(dRMin, dPtRel, evtwt);
 
       // 3 - dPtRel >= 30 || dRMin > 0.4
-      if(Overlaps2D(*goodjets, ele1, 0.4, 30.)) continue;
-      if(Overlaps2D(*goodjets, mu1 , 0.4, 30.)) continue;
+      if(electrons->size()>0 && Overlaps2D(*goodjets, ele1, 0.4, 30.)) continue;
+      if(muons->size()>0     && Overlaps2D(*goodjets, mu1 , 0.4, 30.)) continue;
+      //if (lepIso > 0.1) continue;
       //DMif (dPtRel < 30. && dRMin < 0.4) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt); 
@@ -207,18 +208,36 @@ void DelphesVLQAnalysis::Loop(){
       // ----------------------------------------------
       // Top mass reconstruction for semileptonic case
       // ----------------------------------------------
+
       // first find the neutrino pz given that a real soloution exist
       nuP4 = met->P4();
       double sol1 = 0, sol2 = 0;
       bool isNuPz = SolveNuPz(leptonP4, nuP4, 80.4, sol1, sol2);
-      //now reset the P4 of neutrino
-      if (isNuPz){
-         nuP4.SetPz(sol1);
-         AdjustEnergyForMass(nuP4, 0.);
-      }
+
+      // take the minimum of the two soloutions, and reset the P4 of neutrino      
+      nuP4.SetPz(sol1);
+      AdjustEnergyForMass(nuP4, 0.);
       
+      // do the magic
+      double topMass = 174., higgsMass = 125., dR_Ht = 0;
+      DoMassReco(*jets, leptonP4, nuP4, higgsMass, topMass, chi2_dR, chi2_higgs, chi2_top);
+
+      if ( chi2_dR.first != 100000){
+         //cout << "chi2: " << chi2_dR.first << ", dR: " << chi2_dR.second << ", higgs mass: " 
+         //     << chi2_higgs.second.M() <<", top mass: " << chi2_top.second.M() 
+         //     << ", T' mass: " << (chi2_higgs.second + chi2_top.second).M() << ", W mass: "<< (leptonP4 + nuP4).M() << endl;
+
+         hName["hdR_Ht"]->Fill(chi2_dR.second, evtwt);
+         if(chi2_dR.first >= 1.0){
+            hName["hChi2"]->Fill(chi2_dR.first, evtwt);
+            hName["hHiggsMReco"]->Fill(chi2_higgs.second.M(), evtwt);
+            hName["hTopMReco"]->Fill(chi2_top.second.M(), evtwt);
+            hName["hTopPt"]->Fill(chi2_top.second.Pt(), evtwt);
+            hName["hWMReco"]->Fill((leptonP4 + nuP4).M(), evtwt);
+            hName["hTPrimeMReco"]->Fill(( chi2_higgs.second + chi2_top.second).M(), evtwt);
+         }
+      }
   
-      //cout << "next event " << endl;   
    }//event loop
    writeHisto();
 
@@ -257,7 +276,7 @@ void DelphesVLQAnalysis::bookHisto(){
                               "MET #geq 30", 
                               "S_{T} #geq 600"};
    for (int i=1;i<=nCuts;i++) hName["hEff"]->GetXaxis()->SetBinLabel(i,cuts[i-1]);
-  
+
    h1D("hNGenEvents", "total events", "total events", "Events", 2, 0.5, 2.5) ;
    h1D("hLepIso", "LepIso", "LepIso", "Events", 200, 0, 5);
    h1D("hLepPt", "p_{T}(e/#mu)", "p_{T}(e/#mu) [GeV]", "Events/20 GeV", 50, 0.0,400.0);
@@ -267,7 +286,7 @@ void DelphesVLQAnalysis::bookHisto(){
    h1D("hPtRel", "p_{T}^{REL}","p_{T}^{REL} [GeV]", "Events/20 GeV", 50, 0, 100);
    h1D("hDPtRel", "#Delta p_{T}^{REL}","#Delta p_{T}^{REL} [GeV]", "Events/20 GeV", 50, 0, 100);
    h1D("hDelPtRel", "#Delta p_{T}^{REL}","#Delta p_{T}^{REL} [GeV]", "Events/20 GeV", 50, 0, 100);
-   h1P("prPtRelDRMin", "p_{T}^{REL}", "p_{T}^{REL} (#Delta R_{MIN}(l,j) ) [GeV]", "Events/2 [GeV]", 50, 0, 100); 
+   h1P("prPtRelDRMin", "p_{T}^{REL}", "p_{T}^{REL} (#Delta R_{MIN}(l,j) ) [GeV]", "Events/2 [GeV]", 50, 0, 100);
    h2D("h2DdPtRelDRMin", "h2DdPtRelDRMin", "#Delta R_{MIN}(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 20., 0., 200.);
    h2D("h2DdPtReldR", "h2DdPtReldR", "#Delta R(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 20., 0., 200.);
    h1D("hForwardJetPt", "FwdJetPt", "FwdJetPt [GeV}", "Events/100 GeV", 60, 0, 600);
@@ -281,6 +300,13 @@ void DelphesVLQAnalysis::bookHisto(){
    h1D("hbJetEta", "#eta(bjets)", "#eta(bjets)", "Events", 50, -5.0, 5.0);
    h1D("hMet", "hMet", "E_{T}^{miss} [GeV]", "Events/40 GeV", 50, 0,200);
    h1D("hHT","H_{T}","H_{T} [GeV]","Events/200 GeV", 70, 0, 1400);
-   h1D("hST", "S_{T}", "S_{T} [GeV]", "Events/200 GeV", 100, 0, 2000); 
-   
+   h1D("hST", "S_{T}", "S_{T} [GeV]", "Events/200 GeV", 100, 0, 2000);
+   h1D("hChi2", "Chi2", "#chi_{2}", "Events/10 bins", 50, 0.0, 500);
+   h1D("hHiggsMReco", "M_{H,reco}", "M_{H,reco} [GeV]", "Events/9 GeV", 50, 50.0,500);
+   h1D("hTopMReco", "M_{t,reco}", "M_{t,reco} [GeV]", "Events/10 GeV", 55, 50.0,600); 
+   h1D("hTopPt", "Top pt", "Top p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
+   h1D("hWMReco", "W_{W,reco}", "M_{W,reco} [GeV]", "Events/3 GeV", 150, 50.0,500);
+   h1D("hTPrimeMReco", "M_{T,reco}", "M_{T,reco} [GeV]", "Events/32 GeV ", 50, 60.0, 1660);
+   h1D("hdR_Ht", "#Delta R(t, H)_{reco}", "#Delta R(t, H)_{reco}", "Events",  25, 0, 5);
+
 }
