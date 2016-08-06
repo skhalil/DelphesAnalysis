@@ -18,3 +18,9 @@ condor_submit batch_tt-4p-0-600.jdl
 
 condor_q <USERNAME>
 
+5. After the jobs are done, run the script hadd.py to hadd all the histograms. I
+ usually create a new directory to keep the histograms and make a soft link to the script to run it from there:
+
+mkdir Histo_Aug4
+cd Histo_Aug4
+ln -s ../hadd.py hadd.py
