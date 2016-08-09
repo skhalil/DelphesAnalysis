@@ -51,7 +51,7 @@ public:
    const Electron *elec, *ele1;
    const Muon *muon, *mu1;
    const Jet *jet, *corrJet, *jet1, *bjet, *ak8jet;
-   const GenParticle *partLep, *partEle, *partMu, *partJet;   
+   const GenParticle *partLep, *partEle, *partMu, *partJet, *genPart;   
   
    TClonesArray *branchEvent;
    TClonesArray *branchElectron;
