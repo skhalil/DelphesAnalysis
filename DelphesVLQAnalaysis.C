@@ -28,6 +28,7 @@ void DelphesVLQAnalysis::Loop(){
       bjets     -> clear();
       fjets     -> clear();
       ak8jets   -> clear();
+      higgsjets -> clear();
       
        // 1 - fill all events
       ncut++;
@@ -49,18 +50,43 @@ void DelphesVLQAnalysis::Loop(){
       if(electrons->size() > 0) {
          leptonP4 = electrons->at(0)->P4();
          ele1 = electrons->at(0);
-         lepIso = ele1->IsolationVarRhoCorr;   
+         lepIso = ele1->IsolationVarRhoCorr; 
+         partLep = (GenParticle*) ele1->Particle.GetObject();  
       }
       else {
          leptonP4 = muons->at(0)->P4();
          mu1 = muons->at(0);
          lepIso = mu1->IsolationVarRhoCorr;
+         partLep = (GenParticle*) mu1->Particle.GetObject();
       }
+       
+      //cout << "PID lep : " << partLep->PID << ", m1: " << partLep->M1 << ", m2: " << partLep->M2 <<endl;
+      //cout << "mass : " << partLep->Mass << endl;
+      //Int_t m1ID = (GenParticle*)branchParticle->At(partLep->M1);
+           
+      /*
+      // select QCD sample:           
+      Int_t pid(0.), d1(0.), d2(0.), m1(0.), m2(0.), ch(0.), st(0.), dau1ID(0.), dau2ID(0.); 
+      TLorentzVector genP4; 
       
+      for(i = 0; i < branchParticle->GetEntriesFast(); i++){
+         particle = (GenParticle*)branchParticle->At(i);
+         pid = particle->PID;
+         d1  = particle->D1;    d2  = particle->D2;
+         m1  = particle->M1;    m2  = particle->M2;
+         ch  = particle->Charge;
+         st  = particle->Status;
+         genP4 = particle->P4();
+         if (pid == 11){
+            //cout << "m1: " 
+         }
+      }
+      */
+      // Apply jet cleaning 
       Float_t dR(900.0), dRMin(999.0), delPtRel(999.0);
       Float_t eta(999.0);
       TVector3 jetp3, lepp3;
-      // Apply jet cleaning 
+      
       for(i = 0; i < branchJet->GetEntriesFast(); i++){
          jet = (Jet*)branchJet->At(i);
          jetP4 = jet->P4();  
@@ -90,20 +116,52 @@ void DelphesVLQAnalysis::Loop(){
          goodjets->push_back(jet);
       }
 
+      for(i = 0; i < branchJetAK8->GetEntriesFast(); i++){
+         ak8jet = (Jet*)branchJetAK8->At(i);
+         jetP4AK8 = ak8jet->P4(); 
+         /*
+         //matched the AK8 jets with ak4 jets 
+         bool matched = false;
+         for(j = 0; j < goodjets->size(); ++j){
+            jetP41 = goodjets->at(j)->P4();  
+            if (jetP41.DeltaR(jetP4AK8) < 0.4){ matched = true;}
+         }
+         // if (matched == true)                     continue;
+         */
+         // quality cuts      
+         if(jetP4AK8.Pt() < 300.0)                continue;
+         if(TMath::Abs(jetP4AK8.Eta()) > 2.4)     continue;
+         if(Overlaps(*ak8jet, *electrons, 0.4))   continue;
+         if(Overlaps(*ak8jet, *muons, 0.4))       continue;
+         if(ak8jet->Tau[1]/ak8jet->Tau[0] > 0.6)  continue;
+         //if(ak8jet->NSubJetsSoftDropped != 2 )    continue;
+         //hName["hSoftMass"]-> Fill(ak8jet->SoftDroppedP4[0].M(), evtwt);
+         //if(ak8jet->SoftDroppedP4[0].M() > 135 && ak8jet->SoftDroppedP4[0].M() < 105) continue;
+              
+         // fill the jets as Higgs jets
+         higgsjets->push_back(ak8jet);
+        
+      }
       // - Store 2d isolation variables 
       Float_t ptRel = nearestJetP4.Perp( leptonP4.Vect() );
       TVector3 nearestJet_v3 = nearestJetP4.Vect();
       TVector3 lepton_v3 = leptonP4.Vect();
       Float_t dPtRel = (nearestJet_v3.Cross( lepton_v3 )).Mag()/ nearestJet_v3.Mag();
       hName["hPtRel"]->Fill(ptRel, evtwt);
-      hName["hDPtRel"]->Fill(dPtRel, evtwt);
+      if (dRMin>0.4){
+         hName["hDPtRel"]->Fill(dPtRel, evtwt);
+      }
       hName["hDRMin"]->Fill(dRMin, evtwt); 
       //prName["prPtRelDRMin"]->Fill(ptRel, dRMin, evtwt);
       hName2D["h2DdPtRelDRMin"]->Fill(dRMin, dPtRel, evtwt);
+      hName["hLepIso"]->Fill(lepIso, evtwt);
+      hName["hLepPt"]-> Fill (leptonP4.Pt(), evtwt);
+      hName["hLepEta"]-> Fill (leptonP4.Eta(), evtwt);
 
       // 3 - dPtRel >= 30 || dRMin > 0.4
-      if(electrons->size()>0 && Overlaps2D(*goodjets, ele1, 0.4, 30.)) continue;
-      if(muons->size()>0     && Overlaps2D(*goodjets, mu1 , 0.4, 30.)) continue;
+      if(electrons->size()>0 && Overlaps2D(*goodjets, ele1, 0.4, 40.)) continue;
+      if(muons->size()>0     && Overlaps2D(*goodjets, mu1 , 0.4, 40.)) continue;
+      //if(lepIso > 0.1) continue;
       //if (dPtRel < 30. && dRMin < 0.4) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt); 
@@ -125,12 +183,19 @@ void DelphesVLQAnalysis::Loop(){
          }
       } //good jet loop
       
+      if(etaMax != 0){
+         hName["hForwardJetPt"]->Fill( mostForwardJetP4.Pt(), evtwt);
+         hName["hForwardJetEta"]->Fill( etaMax, evtwt);
+      }
+      hName["hNFJets"]->Fill(fjets->size(), evtwt);
+      hName["hNJets"]->Fill(jets->size(), evtwt);
+      hName["hMet"]-> Fill (met->P4().Pt(), evtwt); 
 
       // 4 - Require at least one forward jet:
       if (fjets->size() < 1) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt);
-           
+                
       // 5 - Require Njets >= 3 central
       if(jets->size() < 3) continue;
       ncut++;
@@ -138,12 +203,20 @@ void DelphesVLQAnalysis::Loop(){
      
       // 6 - Require leading jet pt > 200 GeV
       Float_t jet1Pt = jets->at(0)->P4().Pt();
+      Float_t jet1Eta = jets->at(0)->P4().Eta();
+      hName["hLeadingJetPt"]->Fill(jet1Pt, evtwt);
+      hName["hLeadingJetEta"]->Fill(jet1Eta, evtwt);
+ 
       if(jet1Pt <= 200) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt);
 
       // 7 - Require second leading jet pt > 80 GeV
       Float_t jet2Pt = jets->at(1)->P4().Pt();
+      Float_t jet2Eta = jets->at(1)->P4().Eta();
+      hName["hSecLeadingJetPt"]->Fill(jet2Pt, evtwt);
+      hName["hSecLeadingJetEta"]->Fill(jet2Eta, evtwt);
+
       if(jet2Pt <= 80) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt);
@@ -183,56 +256,25 @@ void DelphesVLQAnalysis::Loop(){
       ST = HT + leptonP4.Pt() + met->P4().Pt();
 
       //--------- Preselection done ---------------
-      hName["hLepIso"]->Fill(lepIso, evtwt);
-      hName["hLepPt"]-> Fill (leptonP4.Pt(), evtwt);
-      hName["hLepEta"]-> Fill (leptonP4.Eta(), evtwt);
-      if(etaMax != 0){
-         hName["hForwardJetPt"]->Fill( mostForwardJetP4.Pt(), evtwt);
-         hName["hForwardJetEta"]->Fill( etaMax, evtwt);
+      for(j = 0; j < higgsjets->size(); ++j){
+         jetak8_1 = higgsjets->at(j);
+         hName["hSoftMass"]-> Fill(jetak8_1->SoftDroppedP4[0].M(), evtwt); 
+         //hName["hSoftMassPt"]
       }
-      hName["hNFJets"]->Fill(fjets->size(), evtwt);
-      hName["hNJets"]->Fill(jets->size(), evtwt);
-      hName["hLeadingJetPt"]->Fill(jet1Pt, evtwt); 
-      hName["hSecLeadingJetPt"]->Fill(jet2Pt, evtwt);
+      
       hName["hNbjets"]->Fill(nb, evtwt); 
       hName["hLeadingbJetPt"]->Fill(bjet1Pt, evtwt);
       hName["hLeadingbJetEta"]->Fill(bjet1Eta, evtwt);
-      hName["hMet"]-> Fill (met->P4().Pt(), evtwt); 
+      
       hName["hDelRJet1Met"]-> Fill (dR_jet1MET , evtwt); 
       hName["hHT"]->Fill(HT, evtwt);
       hName["hST"]->Fill(ST, evtwt);
       
-
       // 10 - Require ST > 600 GeV
       //if(ST <= 600) continue;
       //ncut++;
       //hName["hEff"]->Fill(ncut, evtwt);
-
-      // ------------------------------------
-      // signal region: fill the kin plots    
-      // ------------------------------------  
-      
-
-
-/*
-      // gen studies:
-      Int_t pid(0.), d1(0.), d2(0.), m1(0.), m2(0.), ch(0.), st(0.); 
-      for(i = 0; i < branchParticle->GetEntriesFast(); i++){
-         genPart = (GenParticle*)branchParticle->At(i);
-         pid = genPart->PID;
-         d1  = genPart->D1;    d2  = genPart->D2;
-         m1  = genPart->M1;    m2  = genPart->M2;
-         ch  = genPart->Charge;
-         st  = genPart->Status;
-
-         //select top quarks
-         if (abs(m1)==6 || abs(m2)==6) {
-            //if (abs(pid) == 24){cout << ", dau1 :" << d1 << ", dau2 :" << d2 << endl;}
-            //cout << ", status: " << st << ", dau1 :" << d1 << ", dau2 :" << d2 << endl;
-            //cout << "pid: " << pid << ", status: " << st << "mom1 : " << m1 << "dau1 :" << d1 << endl;
-         }
-      }
-*/
+ 
       // ----------------------------------------------
       // Top mass reconstruction for semileptonic case
       // ----------------------------------------------
@@ -246,8 +288,10 @@ void DelphesVLQAnalysis::Loop(){
       nuP4.SetPz(sol1);
       AdjustEnergyForMass(nuP4, 0.);
       
-      // do the magic, requiring  
+      // do the magic 
       double topMass = 174., higgsMass = 125., dR_Ht = 0;
+
+      //resolved case 
       DoMassReco(*jets, leptonP4, nuP4, higgsMass, topMass, chi2_dR, chi2_higgs, chi2_top);
       double topM(0.), higgsM(0.), WM(0.), TpM(0.), topPt(0.), higgsPt(0.), WPt(0.), TpPt(0.);
 
@@ -290,8 +334,10 @@ void DelphesVLQAnalysis::Loop(){
       hName["hTPrimePt"]->Fill(TpPt, evtwt);
       hName["hNFJets_sig"]->Fill(fjets->size(), evtwt);
       hName["hNJets_sig"]->Fill(jets->size(), evtwt);
-      hName["hLeadingJetPt_sig"]->Fill(jet1Pt, evtwt); 
+      hName["hLeadingJetPt_sig"]->Fill(jet1Pt, evtwt);
+      hName["hLeadingJetEta_sig"]->Fill(jet1Eta, evtwt); 
       hName["hSecLeadingJetPt_sig"]->Fill(jet2Pt, evtwt);
+      hName["hSecLeadingJetEta_sig"]->Fill(jet2Eta, evtwt); 
       hName["hNbjets_sig"]->Fill(nb, evtwt); 
       hName["hLeadingbJetPt_sig"]->Fill(bjet1Pt, evtwt);
       hName["hLeadingbJetEta_sig"]->Fill(bjet1Eta, evtwt);
@@ -305,6 +351,7 @@ void DelphesVLQAnalysis::Loop(){
          ncut++;
          hName["hEff"]->Fill(ncut, evtwt);
          hName["hTPrimeMReco_qualCuts"]->Fill(TpM, evtwt);
+         hName["hTopMReco_qualCuts"]->Fill(topPt, evtwt);
       }
       
    }//event loop
@@ -364,11 +411,13 @@ void DelphesVLQAnalysis::bookHisto(){
       h1D(("hNFJets"+cat[i]).c_str(), "hNFJets", "nfFwdJets", "nfFwdJets", 4, 0.5, 4.5);
       h1D(("hNJets"+cat[i]).c_str(), "nJets", "nJets", "Events", 10, 0.5, 10.5);
       h1D(("hLeadingJetPt"+cat[i]).c_str(), "Jet1Pt", "Jet1Pt [GeV]", "Events/100 GeV", 80, 0, 800);
+      h1D(("hLeadingJetEta"+cat[i]).c_str(), "#eta(jet1)", "#eta(jet1)", "Events", 50, -5.0, 5.0);
       h1D(("hSecLeadingJetPt"+cat[i]).c_str(), "Jet2Pt", "Jet2Pt [GeV]", "Events/100 GeV", 60, 0, 600);
+      h1D(("hSecLeadingJetEta"+cat[i]).c_str(), "#eta(jet2)", "#eta(jet2)", "Events", 50, -5.0, 5.0);
       h1D(("hNbjets"+cat[i]).c_str(), "nbjets", "nbjets", "Events", 6, 0.5, 6.5);
       h1D(("hLeadingbJetPt"+cat[i]).c_str(), "bJet1Pt", "bJet1Pt [GeV]", "Events/100 GeV", 80, 0, 800);
       h1D(("hLeadingbJetEta"+cat[i]).c_str(), "#eta(bjet1)", "#eta(bjet1)", "Events", 50, -5.0, 5.0);
-      h1D(("hMet"+cat[i]).c_str(), "hMet", "E_{T}^{miss} [GeV]", "Events/40 GeV", 50, 0,200);
+      h1D(("hMet"+cat[i]).c_str(), "hMet", "E_{T}^{miss} [GeV]", "Events/10 GeV", 50, 0, 500);
       h1D(("hDelRJet1Met"+cat[i]).c_str(), "hDelRJet1Met", "#DeltaR(jet, MET)", "Events/0.25 bin", 40, -2, 8);
       h1D(("hHT"+cat[i]).c_str(),"H_{T}","H_{T} [GeV]","Events/200 GeV", 70, 0, 1400);
       h1D(("hST"+cat[i]).c_str(), "S_{T}", "S_{T} [GeV]", "Events/100 GeV", 50, 0, 2000);
@@ -383,10 +432,12 @@ void DelphesVLQAnalysis::bookHisto(){
    //h1P("prPtRelDRMin", "p_{T}^{REL}", "p_{T}^{REL} (#Delta R_{MIN}(l,j) ) [GeV]", "Events/2 [GeV]", 50, 0, 100);
    h2D("h2DdPtRelDRMin", "h2DdPtRelDRMin", "#Delta R_{MIN}(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 20., 0., 200.);
    h2D("h2DdPtReldR", "h2DdPtReldR", "#Delta R(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 20., 0., 200.);
+   h1D("hSoftMass", "M_{softdrop}", "M_{softdrop} [GeV]", "Events/9 GeV", 50, 50.0,500);  
    h1D("hChi2", "Chi2", "#chi_{2}", "Events/10 bins", 50, 0.0, 500);
    h1D("hHiggsMReco", "M_{H,reco}", "M_{H,reco} [GeV]", "Events/9 GeV", 50, 50.0,500);
    h1D("hHiggsPt", "Higgs pt", "Higgs p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
    h1D("hTopMReco", "M_{t,reco}", "M_{t,reco} [GeV]", "Events/10 GeV", 55, 50.0,600); 
+   h1D("hTopMReco_qualCuts", "M_{t,reco}", "M_{t,reco} [GeV]", "Events/10 GeV", 55, 50.0,600); 
    h1D("hTopPt", "Top pt", "Top p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
    h1D("hWMReco", "W_{W,reco}", "M_{W,reco} [GeV]", "Events/3 GeV", 150, 50.0,500);
    h1D("hWPtReco", "W pt", "W p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);

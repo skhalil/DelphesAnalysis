@@ -50,7 +50,7 @@ public:
    const MissingET *met;
    const Electron *elec, *ele1;
    const Muon *muon, *mu1;
-   const Jet *jet, *corrJet, *jet1, *bjet, *ak8jet;
+   const Jet *jet, *corrJet, *jet1, *bjet, *ak8jet, *jetak8_1;
    const GenParticle *partLep, *partEle, *partMu, *partJet, *genPart;   
   
    TClonesArray *branchEvent;
@@ -70,8 +70,7 @@ public:
    vector<const Jet*>            *bjets = new vector<const Jet*>();
    vector<const Jet*>            *fjets = new vector<const Jet*>();
    vector<const Jet*>          *ak8jets = new vector<const Jet*>();
-
-   
+   vector<const Jet*>        *higgsjets = new vector<const Jet*>();
 
    DelphesVLQAnalysis();
    ~DelphesVLQAnalysis();
@@ -105,7 +104,7 @@ public:
  
    
 
-   TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4, jetP4Raw, jetP4, nuP4; 
+   TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4, jetP4Raw, jetP4, jetP41, jetP4AK8, nuP4; 
 
    //book histo
    void bookHisto(); 
@@ -154,12 +153,12 @@ void DelphesVLQAnalysis::Init(const char *inString, const char *outFileName){
    cout << "** Chain contains " << allEntries << " events" << endl;
    
    branchEvent                 = treeReader->UseBranch("Event");
-   branchElectron              = treeReader->UseBranch("Electron");
-   branchMuonTight             = treeReader->UseBranch("MuonTight");
-   branchJet                   = treeReader->UseBranch("JetPUPPI");
-   branchJetAK8                = treeReader->UseBranch("JetAK8");
+   branchElectron              = treeReader->UseBranch("ElectronCHS"); //ElectronCHS
+   branchMuonTight             = treeReader->UseBranch("MuonTightCHS");//MuonTightCHS
+   branchJet                   = treeReader->UseBranch("JetPUPPI"); //JetPUPPI
+   branchJetAK8                = treeReader->UseBranch("JetPUPPIAK8");
    branchScalarHT              = treeReader->UseBranch("ScalarHT");
-   branchMissingET             = treeReader->UseBranch("MissingET");
+   branchMissingET             = treeReader->UseBranch("PuppiMissingET");//PuppiMissingET
    branchParticle              = treeReader->UseBranch("Particle");
    branchGenJet                = treeReader->UseBranch("GenJet");
    
@@ -390,7 +389,7 @@ void DelphesVLQAnalysis::DoMassReco(vector<const Jet*> &jetColl, TLorentzVector 
    TLorentzVector JetsP4[4];
    int index_array[] = {0, 1, 2, 3};
    double chi2 (100000.),  dR(10000.0), minChi2(100000.);
-   //for (int mass = 0; mass <= 1000; mass+=5){
+  
    TLorentzVector topP4, higgsP4;//they will be set by the Chi2 function later
    
    // do it for resolved case

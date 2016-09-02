@@ -6,7 +6,7 @@ from ROOT import TH1D,TFile,TLegend
 #  INPUTS               
 # =====================================================
 
-path = '/uscms_data/d2/skhalil/Delphes2/CMSSW_8_0_4/src/DelphesAnalysis/condor/Histo_Aug4/'
+path = '/uscms_data/d2/skhalil/Delphes2/CMSSW_8_0_4/src/DelphesAnalysis/condor/Histo_Aug9/'
 
 f_tt_0_600        =  TFile(path+'tt-4p-0-600.root')
 f_tt_600_1100     =  TFile(path+'tt-4p-600-1100.root')

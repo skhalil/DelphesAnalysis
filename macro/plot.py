@@ -24,7 +24,7 @@ parser.add_option('--Lumi', metavar='D', type='float', action='store',
                   dest='Lumi',
                   help='Data Luminosity in pb-1')
 parser.add_option('--plotDir', metavar='P', type='string', action='store',
-                  default='Aug05Plots',
+                  default='Aug09Plots',
                   dest='plotDir',
                   help='output directory of plots')
 parser.add_option('--rebin', metavar='T', type='int', action='store',
@@ -60,7 +60,7 @@ vJetsLeg      = 'V+Jets'
 stopLebel     = 'st_'
 stopLeg       = 'single t'
 TbjLabel      = 'Tbj_M1000'
-TbjLeg        = 'Tbj (T #rightarrow tH), 100pb'
+TbjLeg        = 'Tbj (T #rightarrow tH), 20pb'
 
 
 # === create structure ============
@@ -89,12 +89,16 @@ st = [
     [f_tj_2400_100000,   tj_2400_100000_xs,      tj_2400_100000_num,      lumi],  
     ]
 
-Tbj = [[f_Tbj_M1,        Tbj_M1_xs,              Tbj_M1_num,              lumi]]
+Tbj = [[f_Tbj_M1,        Tbj_M1_xs*20,              Tbj_M1_num,              lumi]]
 
 h_top         = getHisto(topLabel,        topLeg,      var,  top,       8,          verbose)
 h_vJet        = getHisto(vJetsLabel,      vJetsLeg,    var,  vJets,     kBlue,      verbose)
 h_st          = getHisto(stopLebel,       stopLeg,     var,  st,        kCyan,      verbose)
 h_Tbj         = getHisto(TbjLabel,        TbjLeg,      var,  Tbj,       kBlack,     verbose)  
+
+h_tot =  h_top.Clone()
+h_tot.Add(h_vJet)
+h_tot.Add(h_st)
 
 c1 = TCanvas('c1', 'c1', 1000, 600)
 
@@ -102,7 +106,10 @@ templates = []
 templates.append(h_top)
 templates.append(h_vJet)
 templates.append(h_st)
+templates.append(h_tot)
 templates.append(h_Tbj)
+
+
 
 #histo properties
 nBins = h_top.GetNbinsX()
@@ -125,7 +132,12 @@ print '\hline'
 
 f.Close()
 
-
+if var == 'hWMReco':
+    ibin = int((80.4 - bMin)/(bMax - bMin)*float(nBins))
+    fail = h_Tbj.Integral(ibin+2,bin2)
+    tot  = h_Tbj.Integral(ibin,bin2)
+    print 'total: ', tot, 'fail (%): ', (fail/tot)*100 
+  
 hs = THStack("","")
 for ihist in reversed(templates[0:3]):
     hs.Add(ihist)
@@ -139,7 +151,7 @@ else:
 #hs.SetMaximum(hs.GetMaximum()*5)
 if var == 'hEff':hs.SetMinimum(100000)
 else: hs.SetMinimum(10)
-
+#hs.SetMaximum(3600000)
 if drawLog == '1':
     gPad.SetLogy()
 
