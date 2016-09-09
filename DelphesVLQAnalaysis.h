@@ -50,8 +50,8 @@ public:
    const MissingET *met;
    const Electron *elec, *ele1;
    const Muon *muon, *mu1;
-   const Jet *jet, *corrJet, *jet1, *bjet, *ak8jet;
-   const GenParticle *partLep, *partEle, *partMu, *partJet;   
+   const Jet *jet, *corrJet, *jet1, *bjet, *ak8jet, *jetak8_1;
+   const GenParticle *partLep, *partEle, *partMu, *partJet, *genPart;   
   
    TClonesArray *branchEvent;
    TClonesArray *branchElectron;
@@ -70,8 +70,7 @@ public:
    vector<const Jet*>            *bjets = new vector<const Jet*>();
    vector<const Jet*>            *fjets = new vector<const Jet*>();
    vector<const Jet*>          *ak8jets = new vector<const Jet*>();
-
-   
+   vector<const Jet*>        *higgsjets = new vector<const Jet*>();
 
    DelphesVLQAnalysis();
    ~DelphesVLQAnalysis();
@@ -79,22 +78,46 @@ public:
    virtual void Init(const char *inString, const char *outFileName);
    virtual void LoadChain();
    virtual void Loop();
+
    template<typename T>
    void CollectionFilter(const TClonesArray& inColl, vector<T*>& outColl, Double_t ptMin, Double_t etaMax, Double_t isoMax);
    template<typename T>
    Bool_t Overlaps(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
    template<typename T>
-   //SKBool_t Overlaps2D(vector<const Jet*>* jets, const T* lep, Double_t drMax, Double_t ptrelMin);
    Bool_t Overlaps2D(vector<const Jet*> &jets, const T* lep, Double_t drMax, Double_t ptrelMin);
    template<typename T>
    TLorentzVector OverlapConstituents(const Jet& jet, const vector<T*>& lepColl, Double_t drMax);
-
+   
    bool SolveNuPz(const TLorentzVector &vlep, const TLorentzVector &vnu, double wmass, double& nuz1, double& nuz2);
    void AdjustEnergyForMass(TLorentzVector& v, double mass);
+   double GetChi2(vector<TLorentzVector> jetsP4, TLorentzVector LeptonP4, TLorentzVector NuP4, double topMass, double higgsMass, TLorentzVector& topP4, TLorentzVector& higgsP4, double& dR);
 
-   TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4, jetP4Raw, jetP4,
-                  nuP4; 
+   double GetChi2Boosted(vector<TLorentzVector> ak4jetsP4, vector<const Jet*> &higgsJets, TLorentzVector LeptonP4, TLorentzVector NuP4, double topMass, double higgsMass, TLorentzVector& topP4, TLorentzVector& higgsP4, double& dR);
+
+   //create references of minChi2 and objects used to minimize the chi2
+
+   // for boosted Higgs case
+   pair <double, TLorentzVector>   chi2_higgs_boost_v;
+   pair <double, TLorentzVector>  &chi2_higgs_boost   = chi2_higgs_boost_v;
+   pair <double, TLorentzVector>   chi2_top_boost_v;
+   pair <double, TLorentzVector>  &chi2_top_boost     = chi2_top_boost_v;
+   pair <double, double>           chi2_dR_boost_v {0.,100000.};
+   pair <double, double>          &chi2_dR_boost      = chi2_dR_boost_v; 
+   // for resolved Higgs case
+   pair <double, TLorentzVector>   chi2_higgs_v;
+   pair <double, TLorentzVector>  &chi2_higgs         = chi2_higgs_v;
+   pair <double, TLorentzVector>   chi2_top_v;
+   pair <double, TLorentzVector>  &chi2_top           = chi2_top_v;
+   pair <double, double>           chi2_dR_v {0.,100000.};
+   pair <double, double>          &chi2_dR             = chi2_dR_v;
    
+ 
+   void DoMassReco(vector<const Jet*> &jetColl, TLorentzVector LeptonP4, TLorentzVector NuP4, double higgsMass, double topMass, pair<double, double> &chi2_dR, pair<double, TLorentzVector> &chi2_higgs, pair <double, TLorentzVector>  &chi2_top);
+   
+   void DoMassRecoBoost(vector<const Jet*> &ak4Jets, vector<const Jet*> &higgsJets, TLorentzVector LeptonP4, TLorentzVector NuP4, double higgsMass, double topMass, pair<double, double> &chi2_dR, pair<double, TLorentzVector> &chi2_higgs, pair <double, TLorentzVector>  &chi2_top);
+  
+   TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4, jetP4Raw, jetP4, jetP41, jetP4AK8, nuP4; 
+
    //book histo
    void bookHisto(); 
    std::map<TString, TH1F*> hName;
@@ -142,12 +165,12 @@ void DelphesVLQAnalysis::Init(const char *inString, const char *outFileName){
    cout << "** Chain contains " << allEntries << " events" << endl;
    
    branchEvent                 = treeReader->UseBranch("Event");
-   branchElectron              = treeReader->UseBranch("Electron");
-   branchMuonTight             = treeReader->UseBranch("MuonTight");
-   branchJet                   = treeReader->UseBranch("JetPUPPI");
-   branchJetAK8                = treeReader->UseBranch("JetAK8");
+   branchElectron              = treeReader->UseBranch("ElectronCHS"); //ElectronCHS
+   branchMuonTight             = treeReader->UseBranch("MuonTightCHS");//MuonTightCHS
+   branchJet                   = treeReader->UseBranch("JetPUPPI"); //JetPUPPI
+   branchJetAK8                = treeReader->UseBranch("JetPUPPIAK8");
    branchScalarHT              = treeReader->UseBranch("ScalarHT");
-   branchMissingET             = treeReader->UseBranch("MissingET");
+   branchMissingET             = treeReader->UseBranch("PuppiMissingET");//PuppiMissingET
    branchParticle              = treeReader->UseBranch("Particle");
    branchGenJet                = treeReader->UseBranch("GenJet");
    
@@ -237,14 +260,16 @@ Bool_t DelphesVLQAnalysis::Overlaps2D(vector<const Jet*> &jets, const T* lep, Do
    Int_t i;
    Bool_t overlaps = false;
    const T *t = static_cast<const T*>(lep);
+   Float_t dr(999.0), dPtRel(999.0); 
+   TVector3 jetp3(0.,0.,0.), lepp3(0.,0.,0.);
 
    // loop over all jets
    for(i = 0; i < jets.size(); i++){
 
-     Float_t dr = jets.at(i)->P4().DeltaR(t->P4());
-     TVector3 jetp3 = (jets.at(i)->P4()).Vect();
-     TVector3 lepp3 = (t->P4()).Vect();
-     Float_t dPtRel = (jetp3.Cross( lepp3 )).Mag()/ jetp3.Mag();
+     dr = jets.at(i)->P4().DeltaR(t->P4());
+     jetp3 = (jets.at(i)->P4()).Vect();
+     lepp3 = (t->P4()).Vect();
+     dPtRel = (jetp3.Cross( lepp3 )).Mag()/ jetp3.Mag();
     
      if(dr < drMax && dPtRel < ptrelMin) overlaps = true;    
      break;
@@ -255,24 +280,24 @@ Bool_t DelphesVLQAnalysis::Overlaps2D(vector<const Jet*> &jets, const T* lep, Do
 
 template<typename T>
 TLorentzVector DelphesVLQAnalysis::OverlapConstituents(const Jet& jet, const vector<T*>& lepColl, Double_t drMax){
-
-  jetP4  = jet.P4();
-  const TObject *object, *jobject;
-
-  // loop over filtered lepton(s)
-  for(int i = 0; i < lepColl.size(); i++){
+   
+   jetP4  = jet.P4();
+   const TObject *object, *jobject;
+   
+   // loop over filtered lepton(s)
+   for(int i = 0; i < lepColl.size(); i++){
     object = lepColl.at(i);
-
+    
     if(object == 0) continue;
     const T *t = static_cast<const T*>(object);
     double lepID = t->GetUniqueID();
     //partLep = (GenParticle*) t->Particle.GetObject();
-
+    
     // Loop over all jet's constituents 
     Float_t dr(999.), jetID(0.);
     for(int j = 0; j < jet.Constituents.GetEntriesFast(); ++j){
       jobject = jet.Constituents.At(j);
-
+      
       if(jobject == 0) continue;      
       jetID = jobject->GetUniqueID();
       /*
@@ -303,36 +328,250 @@ TLorentzVector DelphesVLQAnalysis::OverlapConstituents(const Jet& jet, const vec
         //cout << "after: "<< jetP4.Pt() <<endl;
         break;
       }
-
+      
     }//for constituents
     break;// assuming only one lepton
-    }
-    return jetP4;
-  }
+   }
+   return jetP4;
+}
 
-  bool DelphesVLQAnalysis::SolveNuPz(const TLorentzVector &vlep, const TLorentzVector &vnu, double wmass, double& nuz1, double& nuz2){
-    bool discrimFlag = true;
-    double x = vlep.X()*vnu.X() + vlep.Y()*vnu.Y() + wmass*wmass/2;
-    double a = vlep.Z()*vlep.Z() - vlep.E()*vlep.E();
-    double b = 2*x*vlep.Z();
-    double c = x*x - vnu.Perp2() * vlep.E()*vlep.E();
-    double d = b*b - 4*a*c;
+bool DelphesVLQAnalysis::SolveNuPz(const TLorentzVector &vlep, const TLorentzVector &vnu, double wmass, double& nuz1, double& nuz2){
+   bool discrimFlag = true;
+   double x = vlep.X()*vnu.X() + vlep.Y()*vnu.Y() + wmass*wmass/2;
+   double a = vlep.Z()*vlep.Z() - vlep.E()*vlep.E();
+   double b = 2*x*vlep.Z();
+   double c = x*x - vnu.Perp2() * vlep.E()*vlep.E();
+   double d = b*b - 4*a*c;
 
-    if (d < 0){
+   if (d < 0){
       d = 0; discrimFlag = false;
-    }
+   }
     nuz1 = (-b + sqrt(d))/2/a;
     nuz2 = (-b - sqrt(d))/2/a;
     if (abs(nuz1) > abs(nuz2)){
-      swap (nuz1, nuz2);
+       swap (nuz1, nuz2);
     }
     return discrimFlag;
   }
 
-  // Adjust the energy component of V (leaving the 3-vector part unchanged).
-  void DelphesVLQAnalysis::AdjustEnergyForMass(TLorentzVector& v, double mass){
-    v.SetE(sqrt(v.Vect().Mag2() + mass*mass));
-  }
+// Adjust the energy component of V (leaving the 3-vector part unchanged).
+void DelphesVLQAnalysis::AdjustEnergyForMass(TLorentzVector& v, double mass){
+   v.SetE(sqrt(v.Vect().Mag2() + mass*mass));
+}
+
+/*
+//find the pair of chi2 and mass with minimum chi2 for the optimized T mass
+pair<double, double> DelphesVLQAnalysis::vector_eval(vector<pair<double, double> > vec){
+    double min_value = 9999.;
+    double mass = -1;
+    for( unsigned ind = 0; ind < vec.size(); ++ind) {
+        if (vec[ind].first < min_value){
+            min_value = vec[ind].first;
+            mass = vec[ind].second;
+        }
+    }
+    return std::make_pair(min_value, mass);
+}
+*/
+
+
+double DelphesVLQAnalysis::GetChi2Boosted(vector<TLorentzVector> ak4jetsP4, vector<const Jet*> &higgsJets, TLorentzVector LeptonP4, TLorentzVector NuP4, double topMass, double higgsMass, TLorentzVector& topP4, TLorentzVector& higgsP4, double& dR){
+
+   double top(0.), higgs(0.), top_chi2(0.), higgs_chi2(0.), dR_topH(0.), dR_topH_chi2(0.);
+
+   top = abs( (ak4jetsP4[0] + LeptonP4 + NuP4).M() - topMass);
+   top_chi2 = top*top /(14.5*14.5);
+   topP4 =  ak4jetsP4[0] + LeptonP4 + NuP4;
+
+   higgs = abs(higgsJets.at(0)->SoftDroppedP4[0].M() - higgsMass);
+   higgs_chi2 = higgs*higgs / (14.5*14.5);
+   higgsP4 = higgsJets.at(0)->SoftDroppedP4[0];
+
+   dR_topH = abs( topP4.DeltaR(higgsP4) - 3.15);
+   dR_topH_chi2 = dR_topH*dR_topH/ (0.196*0.196);
+   dR = topP4.DeltaR(higgsP4);
+
+   //cout << "higgs mass = " << higgsP4.M() <<", top mass = " << topP4.M() <<", dR " << dR << endl;
+   return top_chi2 + higgs_chi2 + dR_topH_chi2;
+}
+
+double DelphesVLQAnalysis::GetChi2(vector<TLorentzVector> jetsP4, TLorentzVector LeptonP4, TLorentzVector NuP4, double topMass, double higgsMass, TLorentzVector& topP4, TLorentzVector& higgsP4, double& dR){
+
+   double top(0.), higgs(0.), top_chi2(0.), higgs_chi2(0.), dR_topH(0.), dR_topH_chi2(0.);
+   
+   top = abs( (jetsP4[0] + LeptonP4 + NuP4).M() - topMass);
+   top_chi2 = top*top /(14.5*14.5);
+   topP4 =  jetsP4[0] + LeptonP4 + NuP4;
+
+   higgs = abs((jetsP4[1] + jetsP4[2]).M() - higgsMass);
+   higgs_chi2 = higgs*higgs / (14.5*14.5);
+   higgsP4 = jetsP4[1] + jetsP4[2];
+
+   dR_topH = abs( topP4.DeltaR(higgsP4) - 3.15);
+   dR_topH_chi2 = dR_topH*dR_topH/ (0.196*0.196);
+   dR = topP4.DeltaR(higgsP4);
+
+   //cout << "higgs mass = " << higgsP4.M() <<", top mass = " << topP4.M() <<", dR " << dR << endl;
+   return top_chi2 + higgs_chi2 + dR_topH_chi2;
+}
+
+
+void  DelphesVLQAnalysis::DoMassRecoBoost(vector<const Jet*> &ak4Jets, vector<const Jet*> &higgsJets, TLorentzVector LeptonP4, TLorentzVector NuP4, double higgsMass, double topMass, pair<double, double> &chi2_dR, pair<double, TLorentzVector> &chi2_higgs, pair <double, TLorentzVector>  &chi2_top){
+
+   TLorentzVector ak4JetsP4[2];
+   int index_array[] = {0, 1};
+   double chi2 (100000.),  dR(10000.0), minChi2(100000.);
+   TLorentzVector topP4, higgsP4;
+  
+     if (higgsJets.size() > 0){
+        //cout << "do mass reconstruction for the boosted Higgs case" << endl;
+      do{ 
+         int i0 = index_array[0];
+         int i1 = index_array[1];
+         vector<TLorentzVector> jetsP4PassToChi2;
+         
+         if (!jetsP4PassToChi2.empty()){jetsP4PassToChi2.clear();}
+         topP4.Clear();
+         higgsP4.Clear();
+
+         // if (ak4Jets.size() == 1){
+         ak4JetsP4[0] = ak4Jets.at(i0)->P4();
+            //}
+         if (ak4Jets.size() > 1){
+            ak4JetsP4[1] = ak4Jets.at(i1)->P4();
+         }
+         else
+            ak4JetsP4[1].SetPtEtaPhiM(0.,0.,0.,0.);
+         
+         jetsP4PassToChi2.push_back(ak4JetsP4[0]);
+         jetsP4PassToChi2.push_back(ak4JetsP4[1]);
+         
+         chi2 = GetChi2Boosted(jetsP4PassToChi2, higgsJets, LeptonP4, NuP4, topMass, higgsMass, topP4, higgsP4, dR);
+         //cout << "chi2 = "<< chi2 << endl; 
+         if (chi2 < minChi2){
+            minChi2 = chi2;
+            
+            chi2_higgs.first = minChi2;
+            chi2_higgs.second = higgsP4;
+            
+            chi2_top.first = minChi2;
+            chi2_top.second = topP4;
+
+            chi2_dR.first = minChi2;
+            chi2_dR.second = dR;
+         }
+         
+      }//do
+      while(std::next_permutation(index_array, index_array + 2));
+     } 
+     //cout << "function: chi2: " << chi2_dR.first << ", function: dR: " << chi2_dR.second << endl;
+/*
+    if(chi2 != 100000){ 
+       cout <<"chi2 =  "<< chi2_top.first << ", higgs M = " <<  chi2_higgs.second.M() << ", top M = " <<  chi2_top.second.M() << ", dR = " << chi2_dR.second << ", T mass  = " << (chi2_higgs.second + chi2_top.second).M() << endl;
+       //cout << "dR_Ht = " << dR_Ht << endl;
+     }
+*/
+}
+
+void DelphesVLQAnalysis::DoMassReco(vector<const Jet*> &jetColl, TLorentzVector LeptonP4, TLorentzVector NuP4, double higgsMass, double topMass, pair<double, double> &chi2_dR, pair<double, TLorentzVector> &chi2_higgs, pair<double,TLorentzVector> &chi2_top){
+   
+   chi2_higgs.first = 100000.0; chi2_top.first = 100000.0;
+   TLorentzVector JetsP4[4];
+   int index_array[]  = {0, 1, 2, 3};
+   int index_array1[] = {0, 1, 2};
+   
+   double chi2 (100000.),  dR(10000.0), minChi2(100000.);
+  
+   TLorentzVector topP4, higgsP4;//they will be set by the Chi2 function later
+ 
+   // do it for resolved case
+   if(jetColl.size() > 3){
+      do{
+         int i0 = index_array[0];
+         int i1 = index_array[1];
+         int i2 = index_array[2];
+         int i3 = index_array[3];
+         //cout << "index array " << i0 << ", " << i1 <<", " << i2 << ", " << i3 << endl;   
+         vector<TLorentzVector> jetsP4PassToChi2;
+         
+         if (!jetsP4PassToChi2.empty()){jetsP4PassToChi2.clear();}
+         topP4.Clear();
+         higgsP4.Clear();
+        
+         JetsP4[0] = jetColl.at(i0)->P4();
+         JetsP4[1] = jetColl.at(i1)->P4();
+         JetsP4[2] = jetColl.at(i2)->P4();
+         JetsP4[3] = jetColl.at(i3)->P4();
+         jetsP4PassToChi2.push_back(JetsP4[0]);
+         jetsP4PassToChi2.push_back(JetsP4[1]);
+         jetsP4PassToChi2.push_back(JetsP4[2]);
+         jetsP4PassToChi2.push_back(JetsP4[3]);
+
+         chi2 = GetChi2(jetsP4PassToChi2, LeptonP4, NuP4, topMass, higgsMass, topP4, higgsP4, dR);
+         //cout << "chi2 = "<< chi2 << endl; 
+         if (chi2 < minChi2){
+            minChi2 = chi2;
+
+            chi2_higgs.first = minChi2;
+            chi2_higgs.second = higgsP4;
+
+            chi2_top.first = minChi2;
+            chi2_top.second = topP4;
+
+            chi2_dR.first = minChi2;
+            chi2_dR.second = dR;
+         }
+
+      }
+      while(std::next_permutation(index_array, index_array + 4));
+
+   }//jet if
+   else if (jetColl.size() == 3){
+      do{
+         int i0 = index_array[0];
+         int i1 = index_array[1];
+         int i2 = index_array[2];
+         
+         vector<TLorentzVector> jetsP4PassToChi2;
+         
+         if (!jetsP4PassToChi2.empty()){jetsP4PassToChi2.clear();}
+         topP4.Clear();
+         higgsP4.Clear();
+        
+         JetsP4[0] = jetColl.at(i0)->P4();
+         JetsP4[1] = jetColl.at(i1)->P4();
+         JetsP4[2] = jetColl.at(i2)->P4();
+         
+         jetsP4PassToChi2.push_back(JetsP4[0]);
+         jetsP4PassToChi2.push_back(JetsP4[1]);
+         jetsP4PassToChi2.push_back(JetsP4[2]);
+         
+         chi2 = GetChi2(jetsP4PassToChi2, LeptonP4, NuP4, topMass, higgsMass, topP4, higgsP4, dR);
+         //cout << "chi2 for exactly 3 jets = "<< chi2 << endl; 
+         if (chi2 < minChi2){
+            minChi2 = chi2;
+            
+            chi2_higgs.first = minChi2;
+            chi2_higgs.second = higgsP4;
+            
+            chi2_top.first = minChi2;
+            chi2_top.second = topP4;
+            
+            chi2_dR.first = minChi2;
+            chi2_dR.second = dR;
+         }
+      }//do
+      while(std::next_permutation(index_array1, index_array1 + 3));
+   }
+
+   //cout << "function: chi2: " << chi2_dR.first << ", function: dR: " << chi2_dR.second << endl;
+   // if(chi2 != 100000){ 
+   //cout <<"chi2 =  "<< chi2_top.first << ", higgs M = " <<  chi2_higgs.second.M() << ", top M = " <<  chi2_top.second.M() << ", W Mass = " << chi2_W.second.M() << ", dR = " << chi2_dR.second << ", T mass  = " << (chi2_higgs.second + chi2_top.second).M() << endl;
+   //cout << "dR_Ht = " << dR_Ht << endl;
+     // }
+
+}
+
 
   void DelphesVLQAnalysis::h1D(const char* name, const char* title,
       const char* xTitle, const char* yTitle,

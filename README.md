@@ -40,3 +40,9 @@ For beginers, see [condor](http://uscms.org/uscms_at_work/physics/computing/setu
 
 More details can be found in condor/ReadMeCondor.txt file.
 
+## Plotting scripts
+
+The plotting scripts are in directory `<DelphesAnalysis/macro>`. The main script is `<plot.py>` designed to plot one histogram at a time. All other histograms can be produced by running the script `<runVar.py>`, which has features to control the parameters of `<plot.py>`
+
+     python runVar.py
+              
