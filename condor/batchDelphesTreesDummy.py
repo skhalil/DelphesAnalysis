@@ -2,7 +2,7 @@ universe = vanilla
 Executable = condor_delphes_tree.sh
 x509userproxy = $ENV(X509_USER_PROXY)
 Requirements = OpSys == "LINUX" && (Arch != "DUMMY" ) 
-transfer_input_files = hadronizer.py, delphes.tar.gz, MinBias_100k.pileup
+transfer_input_files = hadronizer.py, Delphes333pre16.tar, MinBias_100k.pileup
 should_transfer_files = YES
 WhenTOTransferOutput  = ON_EXIT
 request_memory = 2100

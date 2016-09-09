@@ -28,19 +28,19 @@ eval `scramv1 runtime -sh`
 
 cd ${_CONDOR_SCRATCH_DIR}
 echo "executing ..."
-#echo "tar -xzvf delphes.tar.gz"
-#tar -xzvf delphes.tar.gz
-echo "tar -xvf DelphesNoSub.tar"
-tar -xvf DelphesNoSub.tar
+echo "tar -xvf Delphes333pre16.tar"
+tar -xvf Delphes333pre16.tar
 echo "ls -lrt"
 ls -lrt
 
-echo "cd delphes"
-cd delphes
+echo "cd Delphes"
+cd Delphes
 echo "cp ../MinBias_100k.pileup ."
 echo "cp ../hadronizer.py ."
 cp ../MinBias_100k.pileup .
 cp ../hadronizer.py .
+echo "ls -lrt"
+ls -lrt
 
 # loop over all lhe files in interval of 20k events 
 # ==================================================
@@ -51,9 +51,11 @@ for i in `seq 0 $max`; do
     if test $counter -eq $PROCESS; then
         let "skip=$i*20000"
         echo "cmsRun hadronizer.py skipEvents=$skip outputFile=genout_$PROCESS.root inputFiles="$INPATH""
-        cmsRun hadronizer.py skipEvents=$skip outputFile=genout_$PROCESS.root inputFiles="$INPATH"  
+        cmsRun hadronizer.py skipEvents=$skip outputFile=genout_$PROCESS.root inputFiles="$INPATH" 
         echo "./DelphesCMSFWLite cards/CMS_PhaseII/CMS_PhaseII_Substructure_PIX4022_200PU.tcl treeout_$PROCESS.root genout_$PROCESS.root"
-        ./DelphesCMSFWLite cards/CMS_PhaseII/CMS_PhaseII_Substructure_PIX4022_200PU.tcl treeout_$PROCESS.root genout_$PROCESS.root
+        ./DelphesCMSFWLite cards/CMS_PhaseII/CMS_PhaseII_Substructure_PIX4022_200PU.tcl treeout_$PROCESS.root genout_$PROCESS.root 
+        #echo "./DelphesCMSFWLite cards/CMS_PhaseII/CMS_PhaseII_Substructure_PIX4022_200PU.tcl treeout_$PROCESS.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/gen/genout_$PROCESS.root"
+        #./DelphesCMSFWLite cards/CMS_PhaseII/CMS_PhaseII_Substructure_PIX4022_200PU.tcl treeout_$PROCESS.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/gen/genout_$PROCESS.root
         
     fi
     let "counter+=1"   
@@ -63,18 +65,16 @@ done
 # ===============================================
 ls -lrt
 
-echo "xrdcp genout*.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/"
-xrdcp genout*.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/
+echo "xrdcp genout*.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/gen/"
+xrdcp genout*.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/gen/
 echo "xrdcp treeout*.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/tree/"
 xrdcp treeout*.root root://cmseos.fnal.gov/$OUTPATH/$SAMPLE/tree/
 rm *.root
-#rm *.C
-#rm *.h
 rm *.py
-#rm delphes.tar.gz
-rm DelphesNoSub.tar
-#rm -rf delphes
+cd ../
+rm Delphes333pre16.tar
 rm -rf Delphes
+
 rm -rf $SAMPLE
 
 ls

@@ -32,7 +32,16 @@ parser.add_option('--outputPath', metavar='F', type='string', action='store',
 inDir = options.inputPath
 outDir = options.outputPath
 scriptPath = options.scriptPath
-toMake = [{'name':'WbT_leftHanded_M1_events'},
+toMake = [#{'name':'WbT_leftHanded_M1_events'},
+          #{'name':'WbT_leftHanded_M1.5_events'},
+          #{'name':'WbT_leftHanded_M2_events'},
+          #{'name':'WbT_leftHanded_M2.5_events'},
+          #{'name':'WbT_leftHanded_M3_events'},
+          {'name':'ZtT_rightHanded_M1_events'},
+          {'name':'ZtT_rightHanded_M1.5_events'},
+          {'name':'ZtT_rightHanded_M2_events'},
+          {'name':'ZtT_rightHanded_M2.5_events'},
+          {'name':'ZtT_rightHanded_M3_events'},
           ]
 
 for s in toMake:
@@ -54,9 +63,9 @@ for s in toMake:
     outputFile.close()
 
     # create the output directories where you like to store the output histograms in /eos directory
-    subprocess.call( ['eos root://cmseos.fnal.gov mkdir -p /eos/uscms/store/user/skhalil/DelphesGenVLQ/'+str(s['name'])], shell=True )
-    subprocess.call( ['eos root://cmseos.fnal.gov mkdir -p /eos/uscms/store/user/skhalil/DelphesGenVLQ/'+str(s['name'])+'tree'], shell=True ) 
-    #subprocess.call( ['condor_submit batch_'+str(s['name'])+'.jdl'], shell=True )
+    subprocess.call( ['eos root://cmseos.fnal.gov mkdir -p /eos/uscms/store/user/skhalil/DelphesGenVLQ/'+str(s['name'])+'/gen'], shell=True )
+    subprocess.call( ['eos root://cmseos.fnal.gov mkdir -p /eos/uscms/store/user/skhalil/DelphesGenVLQ/'+str(s['name'])+'/tree'], shell=True ) 
+    subprocess.call( ['condor_submit batch_'+str(s['name'])+'.jdl'], shell=True )
 
 
 

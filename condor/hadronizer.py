@@ -16,7 +16,10 @@ options.register('skipEvents',
                  VarParsing.varType.int,
                  "Skip events before processing")
 
+#options.setDefault('maxEvents', 20000)
 options.parseArguments()
+#maxEvt = options.maxEvents
+maxEvt = 20000
 inFiles = options.inputFiles #='file:/uscms_data/d3/easmith/DelphesThings/TheirDelphes/LHEFiles/WbT_leftHanded_M1_events.lhe']
 outFile = options.outputFile# = 'genout.root'
 #outFile = 'genout.root'
@@ -44,7 +47,7 @@ from Configuration.Generator.Pythia8CUEP8M1Settings_cfi import *
 ###SJ
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(20000) #run on 20k events
+    input = cms.untracked.int32(maxEvt) #run on 20k events
 )
 
 # Input source
