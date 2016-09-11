@@ -61,13 +61,28 @@ stopLabel     = 'st_'
 stopLeg       = 'single t'
 vvLabel       = 'vv_'
 vvLeg         = 'Diboson'
+
 TbjM1Label    = 'Tbj_M1000'
 TbjM1Leg      = 'Tbj_M1 (T #rightarrow tH), 1pb'
 TbjM1p5Label  = 'Tbj_M1500'
 TbjM1p5Leg    = 'Tbj_M1.5 (T #rightarrow tH), 1pb'
 TbjM2Label    = 'Tbj_M2000'
 TbjM2Leg      = 'Tbj_M2 (T #rightarrow tH), 1pb'
+TbjM2p5Label  = 'Tbj_M2500'
+TbjM2p5Leg    = 'Tbj_M2.5 (T #rightarrow tH), 1pb'
+TbjM3Label    = 'Tbj_M3000'
+TbjM3Leg      = 'Tbj_M3 (T #rightarrow tH), 1pb'
 
+TtjM1Label    = 'Ttjt_M1000'
+TtjM1Leg      = 'Ttj_M1 (T #rightarrow tH), 1pb'
+TtjM1p5Label  = 'Ttj_M1500'
+TtjM1p5Leg    = 'Ttj_M1.5 (T #rightarrow tH), 1pb'
+TtjM2Label    = 'Ttj_M2000'
+TtjM2Leg      = 'Ttj_M2 (T #rightarrow tH), 1pb'
+TtjM2p5Label  = 'Ttj_M2500'
+TtjM2p5Leg    = 'Ttj_M2.5 (T #rightarrow tH), 1pb'
+TtjM3Label    = 'Ttj_M3000'
+TtjM3Leg      = 'Ttj_M3 (T #rightarrow tH), 1pb'
 
 # === create structure ============
 top = [
@@ -105,12 +120,27 @@ vv = [
 
 TbjM1  = [[f_Tbj_M1,        Tbj_M1_xs,              Tbj_M1_num,              lumi]]
 TbjM1p5= [[f_Tbj_M1p5,      Tbj_M1p5_xs,            Tbj_M1p5_num,            lumi]]
+TbjM2  = [[f_Tbj_M2,        Tbj_M2_xs,              Tbj_M2_num,              lumi]]
+TbjM2p5= [[f_Tbj_M2p5,      Tbj_M2p5_xs,            Tbj_M2p5_num,            lumi]]
+TbjM3  = [[f_Tbj_M3,        Tbj_M3_xs,              Tbj_M3_num,              lumi]]
+
+TtjM1  = [[f_Ttj_M1,        Ttj_M1_xs,              Ttj_M1_num,              lumi]]
+TtjM1p5= [[f_Ttj_M1p5,      Ttj_M1p5_xs,            Ttj_M1p5_num,            lumi]]
+TtjM2  = [[f_Ttj_M2,        Ttj_M2_xs,              Ttj_M2_num,              lumi]]
+TtjM2p5= [[f_Ttj_M2p5,      Ttj_M2p5_xs,            Ttj_M2p5_num,            lumi]]
+TtjM3  = [[f_Ttj_M3,        Ttj_M3_xs,              Ttj_M3_num,              lumi]]
 
 h_top         = getHisto(topLabel,        topLeg,      var,  top,       8,          verbose)
 h_vJet        = getHisto(vJetsLabel,      vJetsLeg,    var,  vJets,     kBlue,      verbose)
 h_st          = getHisto(stopLabel,       stopLeg,     var,  st,        kCyan,      verbose)
 h_vv          = getHisto(vvLabel,         vvLeg,       var,  vv,        kRed,       verbose)  
 h_TbjM1       = getHisto(TbjM1Label,      TbjM1Leg,    var,  TbjM1,     kBlack,     verbose)  
+h_TbjM1p5     = getHisto(TbjM1p5Label,    TbjM1p5Leg,  var,  TbjM1p5,   kBlue+2,    verbose)
+h_TbjM2       = getHisto(TbjM2Label,      TbjM2Leg,    var,  TbjM2,     kBlue+3,    verbose)  
+h_TbjM2p5     = getHisto(TbjM2p5Label,    TbjM2p5Leg,  var,  TbjM2p5,   kBlue-9,    verbose)
+h_TbjM3       = getHisto(TbjM3Label,      TbjM3Leg,    var,  TbjM3,     kBlue-3,    verbose)  
+
+
 
 h_tot =  h_top.Clone()
 h_tot.Add(h_vJet)
@@ -126,8 +156,10 @@ templates.append(h_st)
 templates.append(h_vv)
 templates.append(h_tot)
 templates.append(h_TbjM1)
-
-
+templates.append(h_TbjM1p5)
+templates.append(h_TbjM2)
+templates.append(h_TbjM2p5)
+templates.append(h_TbjM3)
 
 #histo properties
 nBins = h_top.GetNbinsX()
@@ -174,7 +206,9 @@ if drawLog == '1':
     gPad.SetLogy()
 
 hs.Draw("Hist")
-h_TbjM1.Draw("same, hist")     
+for ihist in reversed(templates[5:10]):
+    print ihist.GetName()
+    ihist.Draw("same, hist")     
 
 xTitle= h_top.GetXaxis().GetTitle()
 yTitle= h_top.GetYaxis().GetTitle()

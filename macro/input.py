@@ -71,12 +71,12 @@ Tbj_M1_xs         = 1.0; #0.2;
 Tbj_M1p5_xs       = 1.0;
 Tbj_M2_xs         = 1.0;
 Tbj_M2p5_xs       = 1.0;
-Tbj_M3p5_xs       = 1.0;
+Tbj_M3_xs         = 1.0;
 Ttj_M1_xs         = 1.0; #0.2;
 Ttj_M1p5_xs       = 1.0;
 Ttj_M2_xs         = 1.0;
 Ttj_M2p5_xs       = 1.0;
-Ttj_M3p5_xs       = 1.0;
+Ttj_M3_xs         = 1.0;
 
 #===== generated events==========
 tt_0_600_num       = f_tt_0_600.Get('hNGenEvents').GetBinContent(1)
