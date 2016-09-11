@@ -1,0 +1,25 @@
+imax 1  number of channels 
+jmax 2  number of backgrounds 
+kmax 8  number of nuisance parameters 
+------------------------------------------- 
+# we have just one channel, in which we observe x data events 
+bin         1
+observation 0
+--------------------------------------------------------------------------
+# now we list the expected events for sig and all backgrounds in that bin 
+# the second 'process' line must have a positive number for backgrounds, and 0 for signal 
+# then we list the independent sources of uncertainties, and give their effect (syst. error) 
+# on each process and bin 
+bin                         1          1         1
+process                     Tbj_M1000  top       vjets      
+process                     0         1         2          
+rate                        124280.0000  2446946.1863  213013.0014  
+--------------------------------------------------------------------------
+lumi         lnN            1.0050    -         1.005     lumi 
+norm_ttbar   lnN            -         1.0160    -          ttbar normalization 
+norm_vjets   lnN            -         -         1.0300     vjets normalization 
+b-tagSF      lnN            1.0100    1.0100    1.0100      b-tag SF 
+ID           lnN            1.0010    1.0010    1.0010      ID SF 
+trigger      lnN            1.0010    1.0010    1.0010      trigger SF 
+lep_iso      lnN            1.0050    1.0050    1.0050      lepton isolation SF 
+JES          lnN            1.0010    1.0010    1.0010      JES 
