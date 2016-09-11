@@ -101,8 +101,10 @@ void DelphesVLQAnalysis::Loop(){
          // quality cuts      
          if(jetP4AK8.Pt() < 300.0)                continue;
          if(TMath::Abs(jetP4AK8.Eta()) > 2.4)     continue;
-         if(Overlaps(*ak8jet, *electrons, 0.4))   continue;
-         if(Overlaps(*ak8jet, *muons, 0.4))       continue;
+         //if(Overlaps(*ak8jet, *electrons, 0.4))   continue;
+         //if(Overlaps(*ak8jet, *muons, 0.4))       continue;
+         if(electrons->size()>0 && Overlaps2D(*ak8jets, ele1, 0.4, 40.)) continue;
+         if(muons->size()>0     && Overlaps2D(*ak8jets, mu1 , 0.4, 40.)) continue;
          if(ak8jet->Tau[1]/ak8jet->Tau[0] > 0.6)  continue;
          if(ak8jet->NSubJetsSoftDropped != 2 )    continue;
          if(jetP4AK8.DeltaR(leptonP4) <= 1.0)     continue;
@@ -117,9 +119,9 @@ void DelphesVLQAnalysis::Loop(){
       TVector3 lepton_v3 = leptonP4.Vect();
       Float_t dPtRel = (nearestJet_v3.Cross( lepton_v3 )).Mag()/ nearestJet_v3.Mag();
       hName["hPtRel"]->Fill(ptRel, evtwt);
-      if (dRMin>0.4){
-         hName["hDPtRel"]->Fill(dPtRel, evtwt);
-      }
+      //if (dRMin>0.4){
+      hName["hDPtRel"]->Fill(dPtRel, evtwt);
+         //}
       hName["hDRMin"]->Fill(dRMin, evtwt); 
       //prName["prPtRelDRMin"]->Fill(ptRel, dRMin, evtwt);
       hName2D["h2DdPtRelDRMin"]->Fill(dRMin, dPtRel, evtwt);
@@ -239,11 +241,6 @@ void DelphesVLQAnalysis::Loop(){
       hName["hHT"]->Fill(HT, evtwt);
       hName["hST"]->Fill(ST, evtwt);
       
-      // 10 - Require ST > 1000 GeV
-      //if(ST <= 1000) continue;
-      //ncut++;
-      //hName["hEff"]->Fill(ncut, evtwt);
- 
       // ----------------------------------------------
       // Top mass reconstruction for semileptonic case
       // ----------------------------------------------
@@ -369,7 +366,6 @@ void DelphesVLQAnalysis::Loop(){
    cout<<"6) 1st jet pt            :  "<<hName["hEff"]->GetBinContent(6)<<endl;
    cout<<"7) 2nd jet pt            :  "<<hName["hEff"]->GetBinContent(7)<<endl; 
    cout<<"8) >= 1 b-jet            :  "<<hName["hEff"]->GetBinContent(8)<<endl;
-   //cout<<"9) 1st b-jet pt          :  "<<hName["hEff"]->GetBinContent(9)<<endl;
    cout<<"9) MET > 20 GeV          :  "<<hName["hEff"]->GetBinContent(9)<<endl;
    cout<<"10) >= 1 higgs           :  "<<hName["hEff"]->GetBinContent(10)<<endl;
    cout<<""<<endl;
@@ -390,7 +386,6 @@ void DelphesVLQAnalysis::bookHisto(){
                               "leading jet pt > 200", 
                               "2nd jet pt > 80", 
                               "N(b jet) #geq 1",
-                              //"leading b-jet pt > 50",
                               "MET #geq 20",                             
                               "N(Higgs) #geq 1"};
    for (int i=1;i<=nCuts;i++) hName["hEff"]->GetXaxis()->SetBinLabel(i,cuts[i-1]);
@@ -407,17 +402,17 @@ void DelphesVLQAnalysis::bookHisto(){
       h1D(("hForwardJetEta"+cat[i]).c_str(),"hForwardJetEta", "#eta(MostFwdjet)", "#eta(MostFwdjet)", 50, -5.0, 5.0);
       h1D(("hNFJets"+cat[i]).c_str(), "hNFJets", "nfFwdJets", "nfFwdJets", 4, 0.5, 4.5);
       h1D(("hNJets"+cat[i]).c_str(), "nJets", "nJets", "Events", 10, 0.5, 10.5);
-      h1D(("hLeadingJetPt"+cat[i]).c_str(), "Jet1Pt", "Jet1Pt [GeV]", "Events/100 GeV", 80, 0, 800);
+      h1D(("hLeadingJetPt"+cat[i]).c_str(), "Jet1Pt", "Jet1Pt [GeV]", "Events/15 GeV", 80, 0, 2000);
       h1D(("hLeadingJetEta"+cat[i]).c_str(), "#eta(jet1)", "#eta(jet1)", "Events", 50, -5.0, 5.0);
-      h1D(("hSecLeadingJetPt"+cat[i]).c_str(), "Jet2Pt", "Jet2Pt [GeV]", "Events/100 GeV", 60, 0, 600);
+      h1D(("hSecLeadingJetPt"+cat[i]).c_str(), "Jet2Pt", "Jet2Pt [GeV]", "Events/20 GeV", 80, 0, 1600);
       h1D(("hSecLeadingJetEta"+cat[i]).c_str(), "#eta(jet2)", "#eta(jet2)", "Events", 50, -5.0, 5.0);
       h1D(("hNbjets"+cat[i]).c_str(), "nbjets", "nbjets", "Events", 6, 0.5, 6.5);
-      h1D(("hLeadingbJetPt"+cat[i]).c_str(), "bJet1Pt", "bJet1Pt [GeV]", "Events/100 GeV", 80, 0, 800);
+      h1D(("hLeadingbJetPt"+cat[i]).c_str(), "bJet1Pt", "bJet1Pt [GeV]", "Events/15 GeV", 80, 0, 2000);
       h1D(("hLeadingbJetEta"+cat[i]).c_str(), "#eta(bjet1)", "#eta(bjet1)", "Events", 50, -5.0, 5.0);
       h1D(("hMet"+cat[i]).c_str(), "hMet", "E_{T}^{miss} [GeV]", "Events/10 GeV", 50, 0, 500);
       h1D(("hDelRJet1Met"+cat[i]).c_str(), "hDelRJet1Met", "#DeltaR(jet, MET)", "Events/0.25 bin", 40, -2, 8);
-      h1D(("hHT"+cat[i]).c_str(),"H_{T}","H_{T} [GeV]","Events/200 GeV", 70, 0, 1400);
-      h1D(("hST"+cat[i]).c_str(), "S_{T}", "S_{T} [GeV]", "Events/100 GeV", 50, 0, 2000);
+      h1D(("hHT"+cat[i]).c_str(),"H_{T}","H_{T} [GeV]","Events/50 GeV", 80, 0, 4000);
+      h1D(("hST"+cat[i]).c_str(), "S_{T}", "S_{T} [GeV]", "Events/50 GeV", 80, 0, 4000);
    }
   
    h1D("hNGenEvents", "total events", "total events", "Events", 2, 0.5, 2.5) ;
@@ -430,32 +425,32 @@ void DelphesVLQAnalysis::bookHisto(){
    h2D("h2DdPtRelDRMin", "h2DdPtRelDRMin", "#Delta R_{MIN}(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 20., 0., 200.);
    h2D("h2DdPtReldR", "h2DdPtReldR", "#Delta R(l,j)", "#Delta p_{T}^{REL} [GeV]", 50, 0.0, 1.0, 20., 0., 200.);
    h1D("hSoftMass", "M_{softdrop}", "M_{softdrop} [GeV]", "Events/9 GeV", 50, 50.0, 500);
-   h1D("hSoftPt", "Pt_{softdrop}", "Pt_{softdrop} [GeV]", "Events/20 GeV", 50, 0., 1000);
+   h1D("hSoftPt", "Pt_{softdrop}", "Pt_{softdrop} [GeV]", "Events/40 GeV", 100, 0, 4000);
    // for boosted case
    h1D("hChi2Boost", "Chi2Boost", "#chi_{2}", "Events/10 bins", 50, 0.0, 500);
    h1D("hHiggsMRecoBoost", "Boosted M_{H,reco}", "M_{H,reco} [GeV]", "Events/9 GeV", 50, 50.0, 500);
-   h1D("hHiggsPtBoost", "Boosted Higgs pt", "Higgs p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
+   h1D("hHiggsPtBoost", "Boosted Higgs pt", "Higgs p_{T} [GeV]", "Events/ 20 GeV", 80, 0, 1600);
    h1D("hTopMRecoBoost", "Boosted M_{t,reco}", "M_{t,reco} [GeV]", "Events/10 GeV", 55, 50.0, 600); 
-   h1D("hTopPtBoost", "Boosted Top pt", "Top p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
+   h1D("hTopPtBoost", "Boosted Top pt", "Top p_{T} [GeV]", "Events/ 20 GeV", 80, 0, 1600);
    h1D("hWMRecoBoost", "Boosted W_{W,reco}", "M_{W,reco} [GeV]", "Events/3 GeV", 150, 50.0,500);
    h1D("hWPtRecoBoost", "Boosted W pt", "W p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
-   h1D("hTPrimeMRecoBoost", "Boosted M_{T,reco}", "M_{T,reco} [GeV]", "Events/16 GeV ", 50, 60.0, 1660);
+   h1D("hTPrimeMRecoBoost", "Boosted M_{T,reco}", "M_{T,reco} [GeV]", "Events/36 GeV ", 100, 60.0, 3660.);
    h1D("hTPrimePtBoost", "Boosted TPrime pt", "T p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
    h1D("hdR_HtBoost", "Boosted #Delta R(t, H)_{reco}", "#Delta R(t, H)_{reco}", "Events",  25, 0, 5);
-   h1D("hSTBoost", "S_{T}, boosted", "S_{T} [GeV]", "Events/100 GeV", 50, 0, 2000);
+   h1D("hSTBoost", "S_{T}, boosted", "S_{T} [GeV]", "Events/50 GeV", 80, 0, 4000);
 
    // for resolved case  
    h1D("hChi2", "Chi2", "#chi_{2}", "Events/10 bins", 50, 0.0, 500);
    h1D("hHiggsMReco", "M_{H,reco}", "M_{H,reco} [GeV]", "Events/9 GeV", 50, 50.0, 500);
-   h1D("hHiggsPt", "Higgs pt", "Higgs p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
+   h1D("hHiggsPt", "Higgs pt", "Higgs p_{T} [GeV]", "Events/ 20 GeV", 80, 0, 1600);
    h1D("hTopMReco", "M_{t,reco}", "M_{t,reco} [GeV]", "Events/10 GeV", 55, 50.0, 600);   
-   h1D("hTopPt", "Top pt", "Top p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
+   h1D("hTopPt", "Top pt", "Top p_{T} [GeV]", "Events/ 20 GeV", 80, 0, 1600);
    h1D("hWMReco", "W_{W,reco}", "M_{W,reco} [GeV]", "Events/3 GeV", 150, 50.0,500);
    h1D("hWPtReco", "W pt", "W p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
-   h1D("hTPrimeMReco", "M_{T,reco}", "M_{T,reco} [GeV]", "Events/16 GeV ", 50, 60.0, 1660);
-   h1D("hTPrimeMReco_1bjet", "M_{T,reco}, 1bjet", "M_{T,reco} [GeV]", "Events/16 GeV ", 50, 60.0, 1660);
-   h1D("hTPrimeMReco_2bjet", "M_{T,reco}, 2bjet", "M_{T,reco} [GeV]", "Events/16 GeV ", 50, 60.0, 1660);
+   h1D("hTPrimeMReco", "M_{T,reco}", "M_{T,reco} [GeV]", "Events/36 GeV ", 100, 60.0, 3660.);
+   h1D("hTPrimeMReco_1bjet", "M_{T,reco}, 1bjet", "M_{T,reco} [GeV]", "Events/36 GeV ", 100, 60.0, 3660.);
+   h1D("hTPrimeMReco_2bjet", "M_{T,reco}, 2bjet", "M_{T,reco} [GeV]", "Events/36 GeV ", 100, 60.0, 3660.);
    h1D("hTPrimePt", "TPrime pt", "T p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
    h1D("hdR_Ht", "#Delta R(t, H)_{reco}", "#Delta R(t, H)_{reco}", "Events",  25, 0, 5);
-   h1D("hSTResolved", "S_{T}, resolved", "S_{T} [GeV]", "Events/100 GeV", 50, 0, 2000);
+   h1D("hSTResolved", "S_{T}, resolved", "S_{T} [GeV]", "Events/50 GeV", 80, 0, 4000);
 }

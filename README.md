@@ -21,7 +21,7 @@
 
 ## test run
 
-    root -l DelphesAnalysis/RunAnalyzer.C'("DelphesAnalysis/FileLists/tt-4p-0-600_200PU_1.txt", "test")'
+    root -l DelphesAnalysis/RunAnalyzer.C'("root://cmseos.fnal.gov//store/user/skhalil/DelphesGenVLQ/WbT_leftHanded_M1_events/tree/treeout_0.root", "signal")'
 
 ## to run over full samples using condor
 
