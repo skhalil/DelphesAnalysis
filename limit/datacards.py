@@ -112,7 +112,7 @@ Path = 'inputFiles/'
 f = TFile(Path+'all.root')
 histMass = []
 templates = []
-mass = ['1000']
+mass = ['1000', '1500', '2000', '2500', '3000']
 
 h_top  = f.Get('Top_'+var).Clone()
 h_vjet  = f.Get('VJets_'+var).Clone()
@@ -154,7 +154,7 @@ for m in mass:
     histMass.append(h_VLQ)
     if m == '1000':
         templates.append(h_VLQ)
-    print 'mass = ', m, 'value = ', h_VLQ.Integral()
+    #print 'mass = ', m, 'value = ', h_VLQ.Integral()
 
 nBins = h_top.GetNbinsX()
 bMin = h_top.GetBinLowEdge(1)
@@ -165,7 +165,9 @@ bin2 = h_top.GetXaxis().FindBin(bMax)
 integralError = Double(5)
 
 for h in histMass:
-    vlq = h.GetName().split('_')[1]
+    vlq = h.GetName()#.split('_')[1]
+    vlq = vlq.replace(var, '')
+    
     h.IntegralAndError(bin1,bin2,integralError)  
     sig    = h.Integral(bin1,bin2)          ; sig_e     = integralError
     
@@ -176,7 +178,7 @@ for h in histMass:
     allvjet= h_allvjet.Integral(bin1,bin2)  ; allvjet_e =  integralError
     
     print 'sig events: ', sig
-    d_out = open('datacards/card.txt', 'w')   
+    d_out = open('datacards/'+vlq+'_card.txt', 'w')   
     d_out.write("imax 1  number of channels \n")
     d_out.write("jmax 2  number of backgrounds \n")
     d_out.write("kmax 8  number of nuisance parameters \n")
@@ -188,7 +190,7 @@ for h in histMass:
     d_out.write("# the second 'process' line must have a positive number for backgrounds, and 0 for signal \n")
     d_out.write("# then we list the independent sources of uncertainties, and give their effect (syst. error) \n")
     d_out.write("# on each process and bin \n")
-    d_out.write("bin                         {0:<8}  {1:<8}  {2:<8}   \n".format('Tjb', 'Tjb', 'Tjb') ) 
+    d_out.write("bin                         {0:<8}  {1:<8}  {2:<8}   \n".format('Tbj', 'Tbj', 'Tbj') ) 
     d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format(vlq, 'top', 'vjets'))      
     d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format('0', '1', '2'))
     d_out.write("rate                        {0:<8.4f}  {1:<8.4f}  {2:<8.4f}  \n".format(sig, alltop, allvjet)) 
@@ -197,7 +199,7 @@ for h in histMass:
     d_out.write("lumi         lnN            {0:<8.4f}  {1:<8}  {2:<8}  lumi \n".format(1.005, '-', 1.005))
     d_out.write("norm_ttbar   lnN            {0:<8}  {1:<8.4f}  {2:<8}   ttbar normalization \n".format('-', 1.016, '-') )
     d_out.write("norm_vjets   lnN            {0:<8}  {1:<8}  {2:<8.4f}   vjets normalization \n".format('-', '-', 1.030) )
-    d_out.write("b-tagSF      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    b-tag SF \n".format(1.030, 1.030, 1.030) )
+    d_out.write("b-tagSF      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    b-tag SF \n".format(1.010, 1.010, 1.010) )
     d_out.write("ID           lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    ID SF \n".format(1.001, 1.001, 1.001) )
     d_out.write("trigger      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    trigger SF \n".format(1.001, 1.001, 1.001) )
     d_out.write("lep_iso      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    lepton isolation SF \n".format(1.005, 1.005, 1.005) )
@@ -238,7 +240,7 @@ if options.plot:
     #leg.AddEntry(h_data, "Data 19.6 fb^{-1}", 'pl')
 
     setCosmetics(h_alltop, 8, 'TTJets',leg)
-    setCosmetics(h_vjet, 90, 'VJets',leg)
+    setCosmetics(h_allvjet, 90, 'VJets',leg)
     #setCosmetics(h_stop, 38, 'Diboson',leg)
     setCosmetics(h_VLQ, kBlue-3, model+'_1000',leg)
     
