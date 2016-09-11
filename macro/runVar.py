@@ -20,8 +20,8 @@ options = [
  #  ['hNJets',          '0', '0'],
  #  ['hNFJets',         '0', '0'],
 #   ['hNbjets',         '1', '0'],
-    ['hForwardJetPt',   '0', '0'],
-    ['hForwardJetEta',   '0', '0'],
+ #   ['hForwardJetPt',   '0', '0'],
+ #   ['hForwardJetEta',   '0', '0'],
  #  ['hLeadingJetPt',   '0', '0'],
 #   ['hLeadingJetPt_sig',  '1', '0'],
  #  ['hSecLeadingJetPt','0', '0'],
@@ -30,22 +30,29 @@ options = [
 #   ['hLeadingbJetPt_sig',  '1', '0'],
 #   ['hDelRJet1Met',    '0', '0'],
  #  ['hMet',            '0', '0'],
- #  ['hST',             '0', '1'],
+   ['hST',             '0', '1'],
 #   ['hHiggsMReco',     '0', '0'],
-#    ['hHiggsPt',     '0', '0'],
-#   ['hTopPt',          '0', '0'],
+#   ['hHiggsPt',        '0', '0'],
+#   ['hTopPt','0', '0'],
 #   ['hTopMReco',       '0', '0'],
-#   ['hTPrimeMReco',    '0', '1'],
+   ['hTPrimeMReco',    '0', '1'],
 #   ['hTPrimeMReco_1bjet',    '0', '1'],
 #   ['hTPrimeMReco_2bjet',    '0', '1'],
-#   ['hTPrimeMReco_qualCuts', '0', '1'],
 #   ['hdR_Ht',          '0', '0'],
 #   ['hWMReco',         '1', '0'],
 #   ['hChi2',           '0', '0'],
- 
+#    ['hChi2Boost',      '1', '1'],
+#    ['hHiggsMRecoBoost','0', '0'],
+#    ['hHiggsPtBoost',   '0',  '0'],
+#    ['hTopPtBoost',     '0',  '0'], 
+    ['hTPrimeMRecoBoost',    '0', '1'],
+#    ['hdR_HtBoost',     '0', '0'],
+    ['hSTBoost',        '0', '1'],
+    ['hSTResolved',        '0', '1'],
+
     ##['hTopEta'],
     ##['hTopMass'],
-    #['hHigssMass'],
+     #['hHigssMass'],
     #['hLepPt'+suffix],
     #['hLepEta'+suffix],
     #['hDRMin'+suffix],
@@ -64,7 +71,7 @@ options = [
      
     ]
 
-command = "python plot.py --var={0:s} --logScale={1:s} --plotDir='Aug09Plots'"
+command = "python plot.py --var={0:s} --logScale={1:s} --plotDir='Sep10Plots'"
 
 hists = []
 for option in options :

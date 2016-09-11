@@ -5,8 +5,8 @@ from ROOT import TH1D,TFile,TLegend
 # =====================================================
 #  INPUTS               
 # =====================================================
-
-path = '/uscms_data/d2/skhalil/Delphes2/CMSSW_8_0_4/src/DelphesAnalysis/condor/Histo_Aug9/'
+gSF = 0.97 #trigger SF
+path = '/uscms_data/d2/skhalil/Delphes2/CMSSW_8_0_4/src/DelphesAnalysis/condor/Histo_Sep9/'
 
 f_tt_0_600        =  TFile(path+'tt-4p-0-600.root')
 f_tt_600_1100     =  TFile(path+'tt-4p-600-1100.root')
@@ -25,30 +25,58 @@ f_tj_500_1000     =  TFile(path+'tj-4p-500-1000.root')
 f_tj_1000_1600    =  TFile(path+'tj-4p-1000-1600.root')
 f_tj_1600_2400    =  TFile(path+'tj-4p-1600-2400.root')
 f_tj_2400_100000  =  TFile(path+'tj-4p-2400-100000.root')
+f_BB_0_300        =  TFile(path+'BB-4p-0-300.root')
+f_BB_300_700      =  TFile(path+'BB-4p-300-700.root')
+f_BB_700_1300     =  TFile(path+'BB-4p-700-1300.root')
+f_BB_1300_2100    =  TFile(path+'BB-4p-1300-2100.root')
+f_BB_2100_100000  =  TFile(path+'BB-4p-2100-100000.root')
 
 f_Tbj_M1          =  TFile(path+'Tbj_M1.root')
+f_Tbj_M1p5        =  TFile(path+'Tbj_M1p5.root')
+f_Tbj_M2          =  TFile(path+'Tbj_M2.root')
+f_Tbj_M2p5        =  TFile(path+'Tbj_M2p5.root')
+f_Tbj_M3          =  TFile(path+'Tbj_M3.root')
 
+f_Ttj_M1          =  TFile(path+'Ttj_M1.root')
+f_Ttj_M1p5        =  TFile(path+'Ttj_M1p5.root')
+f_Ttj_M2          =  TFile(path+'Ttj_M2.root')
+f_Ttj_M2p5        =  TFile(path+'Ttj_M2p5.root')
+f_Ttj_M3          =  TFile(path+'Ttj_M3.root')
 
 #===== cross sections (pb)==========
-tt_0_600_xs       = 530.89358
-tt_600_1100_xs    = 42.55351
-tt_1100_1700_xs   = 4.48209
-tt_1700_2500_xs   = 0.52795
-tt_2500_100000_xs = 0.05449
-Vj_0_300_xs       = 34409.92339
-Vj_300_600_xs     = 2642.85309
-Vj_600_1100_xs    = 294.12311
-Vj_1100_1800_xs   = 25.95000
-Vj_1800_2700_xs   = 2.4211
-Vj_2700_3700_xs   = 0.22690
-Vj_3700_100000_xs = 0.02767
-tj_0_500_xs       = 109.73602
-tj_500_1000_xs    = 5.99325
-tj_1000_1600_xs   = 0.37680
-tj_1600_2400_xs   = 0.03462
-tj_2400_100000_xs = 0.00312
+tt_0_600_xs       = 530.89358   * gSF * 1.6562
+tt_600_1100_xs    = 42.55351    * gSF * 1.6562
+tt_1100_1700_xs   = 4.48209     * gSF * 1.6562    
+tt_1700_2500_xs   = 0.52795     * gSF * 1.6562
+tt_2500_100000_xs = 0.05449     * gSF * 1.6562
+Vj_0_300_xs       = 34409.92339 * gSF * 1.23
+Vj_300_600_xs     = 2642.85309  * gSF * 1.23
+Vj_600_1100_xs    = 294.12311   * gSF * 1.23
+Vj_1100_1800_xs   = 25.95000    * gSF * 1.23
+Vj_1800_2700_xs   = 2.4211      * gSF * 1.23
+Vj_2700_3700_xs   = 0.22690     * gSF * 1.23
+Vj_3700_100000_xs = 0.02767     * gSF * 1.23
+tj_0_500_xs       = 109.73602   * gSF * 1.00
+tj_500_1000_xs    = 5.99325     * gSF * 1.00
+tj_1000_1600_xs   = 0.37680     * gSF * 1.00
+tj_1600_2400_xs   = 0.03462     * gSF * 1.00
+tj_2400_100000_xs = 0.00312     * gSF * 1.00
+BB_0_300_xs       = 249.97710   * gSF * 1.00
+BB_300_700_xs     = 35.23062    * gSF * 1.00
+BB_700_1300_xs    = 4.13743     * gSF * 1.00
+BB_1300_2100_xs   = 0.41702     * gSF * 1.00
+BB_2100_100000_xs = 0.04770     * gSF * 1.00
 
 Tbj_M1_xs         = 1.0; #0.2;
+Tbj_M1p5_xs       = 1.0;
+Tbj_M2_xs         = 1.0;
+Tbj_M2p5_xs       = 1.0;
+Tbj_M3p5_xs       = 1.0;
+Ttj_M1_xs         = 1.0; #0.2;
+Ttj_M1p5_xs       = 1.0;
+Ttj_M2_xs         = 1.0;
+Ttj_M2p5_xs       = 1.0;
+Ttj_M3p5_xs       = 1.0;
 
 #===== generated events==========
 tt_0_600_num       = f_tt_0_600.Get('hNGenEvents').GetBinContent(1)
@@ -68,8 +96,22 @@ tj_500_1000_num    = f_tj_500_1000.Get('hNGenEvents').GetBinContent(1)
 tj_1000_1600_num   = f_tj_1000_1600.Get('hNGenEvents').GetBinContent(1)
 tj_1600_2400_num   = f_tj_1600_2400.Get('hNGenEvents').GetBinContent(1)
 tj_2400_100000_num = f_tj_2400_100000.Get('hNGenEvents').GetBinContent(1)
+BB_0_300_num       = f_BB_0_300.Get('hNGenEvents').GetBinContent(1)
+BB_300_700_num     = f_BB_300_700.Get('hNGenEvents').GetBinContent(1)
+BB_700_1300_num    = f_BB_700_1300.Get('hNGenEvents').GetBinContent(1)
+BB_1300_2100_num   = f_BB_1300_2100.Get('hNGenEvents').GetBinContent(1)
+BB_2100_100000_num = f_BB_2100_100000.Get('hNGenEvents').GetBinContent(1)
 
 Tbj_M1_num         = f_Tbj_M1.Get('hNGenEvents').GetBinContent(1)
+Tbj_M1p5_num       = f_Tbj_M1p5.Get('hNGenEvents').GetBinContent(1)
+Tbj_M2_num         = f_Tbj_M2.Get('hNGenEvents').GetBinContent(1)
+Tbj_M2p5_num       = f_Tbj_M2p5.Get('hNGenEvents').GetBinContent(1)
+Tbj_M3_num         = f_Tbj_M3.Get('hNGenEvents').GetBinContent(1)
+Ttj_M1_num         = f_Ttj_M1.Get('hNGenEvents').GetBinContent(1)
+Ttj_M1p5_num       = f_Ttj_M1p5.Get('hNGenEvents').GetBinContent(1)
+Ttj_M2_num         = f_Ttj_M2.Get('hNGenEvents').GetBinContent(1)
+Ttj_M2p5_num       = f_Ttj_M2p5.Get('hNGenEvents').GetBinContent(1)
+Ttj_M3_num         = f_Ttj_M3.Get('hNGenEvents').GetBinContent(1)
 
 # =====================================================
 #  VARIABLES           

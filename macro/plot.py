@@ -16,7 +16,7 @@ gStyle.SetOptStat(0)
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option('--var', metavar='T', type='string', action='store',
-                  default='hTopPt',
+                  default='hEff',
                   dest='var',
                   help='variable to plot')
 parser.add_option('--Lumi', metavar='D', type='float', action='store',
@@ -24,7 +24,7 @@ parser.add_option('--Lumi', metavar='D', type='float', action='store',
                   dest='Lumi',
                   help='Data Luminosity in pb-1')
 parser.add_option('--plotDir', metavar='P', type='string', action='store',
-                  default='Aug09Plots',
+                  default='Sep10Plots',
                   dest='plotDir',
                   help='output directory of plots')
 parser.add_option('--rebin', metavar='T', type='int', action='store',
@@ -57,10 +57,16 @@ topLabel      = 'Top_'
 topLeg        = 't#bar{t}'
 vJetsLabel    = 'VJets_'
 vJetsLeg      = 'V+Jets'
-stopLebel     = 'st_'
+stopLabel     = 'st_'
 stopLeg       = 'single t'
-TbjLabel      = 'Tbj_M1000'
-TbjLeg        = 'Tbj (T #rightarrow tH), 20pb'
+vvLabel       = 'vv_'
+vvLeg         = 'Diboson'
+TbjM1Label    = 'Tbj_M1000'
+TbjM1Leg      = 'Tbj_M1 (T #rightarrow tH), 1pb'
+TbjM1p5Label  = 'Tbj_M1500'
+TbjM1p5Leg    = 'Tbj_M1.5 (T #rightarrow tH), 1pb'
+TbjM2Label    = 'Tbj_M2000'
+TbjM2Leg      = 'Tbj_M2 (T #rightarrow tH), 1pb'
 
 
 # === create structure ============
@@ -89,16 +95,27 @@ st = [
     [f_tj_2400_100000,   tj_2400_100000_xs,      tj_2400_100000_num,      lumi],  
     ]
 
-Tbj = [[f_Tbj_M1,        Tbj_M1_xs*20,              Tbj_M1_num,              lumi]]
+vv = [
+    [f_BB_0_300,         BB_0_300_xs,            BB_0_300_num,            lumi],
+    [f_BB_300_700,       BB_300_700_xs,          BB_300_700_num,          lumi],
+    [f_BB_700_1300,      BB_700_1300_xs,         BB_700_1300_num,         lumi],
+    [f_BB_1300_2100,     BB_1300_2100_xs,        BB_1300_2100_num,        lumi],
+    [f_BB_2100_100000,   BB_2100_100000_xs,      BB_2100_100000_num,      lumi],
+    ]
+
+TbjM1  = [[f_Tbj_M1,        Tbj_M1_xs,              Tbj_M1_num,              lumi]]
+TbjM1p5= [[f_Tbj_M1p5,      Tbj_M1p5_xs,            Tbj_M1p5_num,            lumi]]
 
 h_top         = getHisto(topLabel,        topLeg,      var,  top,       8,          verbose)
 h_vJet        = getHisto(vJetsLabel,      vJetsLeg,    var,  vJets,     kBlue,      verbose)
-h_st          = getHisto(stopLebel,       stopLeg,     var,  st,        kCyan,      verbose)
-h_Tbj         = getHisto(TbjLabel,        TbjLeg,      var,  Tbj,       kBlack,     verbose)  
+h_st          = getHisto(stopLabel,       stopLeg,     var,  st,        kCyan,      verbose)
+h_vv          = getHisto(vvLabel,         vvLeg,       var,  vv,        kRed,       verbose)  
+h_TbjM1       = getHisto(TbjM1Label,      TbjM1Leg,    var,  TbjM1,     kBlack,     verbose)  
 
 h_tot =  h_top.Clone()
 h_tot.Add(h_vJet)
 h_tot.Add(h_st)
+h_tot.Add(h_vv)
 
 c1 = TCanvas('c1', 'c1', 1000, 600)
 
@@ -106,8 +123,9 @@ templates = []
 templates.append(h_top)
 templates.append(h_vJet)
 templates.append(h_st)
+templates.append(h_vv)
 templates.append(h_tot)
-templates.append(h_Tbj)
+templates.append(h_TbjM1)
 
 
 
@@ -134,19 +152,19 @@ f.Close()
 
 if var == 'hWMReco':
     ibin = int((80.4 - bMin)/(bMax - bMin)*float(nBins))
-    fail = h_Tbj.Integral(ibin+2,bin2)
-    tot  = h_Tbj.Integral(ibin,bin2)
+    fail = h_TbjM1.Integral(ibin+2,bin2)
+    tot  = h_TbjM1.Integral(ibin,bin2)
     print 'total: ', tot, 'fail (%): ', (fail/tot)*100 
   
 hs = THStack("","")
-for ihist in reversed(templates[0:3]):
+for ihist in reversed(templates[0:4]):
     hs.Add(ihist)
     print 'histo added', ihist.GetName()
    
-if h_Tbj.GetMaximum() > hs.GetMaximum():
-    hs.SetMaximum(h_Tbj.GetMaximum())
+if h_TbjM1.GetMaximum() > hs.GetMaximum():
+    hs.SetMaximum(h_TbjM1.GetMaximum())
 else:
-    h_Tbj.SetMaximum(hs.GetMaximum())
+    h_TbjM1.SetMaximum(hs.GetMaximum())
 
 #hs.SetMaximum(hs.GetMaximum()*5)
 if var == 'hEff':hs.SetMinimum(100000)
@@ -156,7 +174,7 @@ if drawLog == '1':
     gPad.SetLogy()
 
 hs.Draw("Hist")
-h_Tbj.Draw("same, hist")     
+h_TbjM1.Draw("same, hist")     
 
 xTitle= h_top.GetXaxis().GetTitle()
 yTitle= h_top.GetYaxis().GetTitle()
@@ -173,13 +191,13 @@ prel = TLatex()
 prel.SetNDC(kTRUE)
 prel.SetTextFont(52)
 prel.SetTextSize(0.05)
-prel.DrawLatex(0.25,0.92,"Preliminary")
+prel.DrawLatex(0.34,0.92,"Simulation")
 
 cms = TLatex()
 cms.SetNDC(kTRUE)
 cms.SetTextFont(61)
 cms.SetTextSize(0.05)
-cms.DrawLatex(0.15,0.92,"CMS")
+cms.DrawLatex(0.15,0.92,"CMS-Delphes")
 leg.Draw()
 
 c1.SaveAs(outDir+"/"+var+".png")
