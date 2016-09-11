@@ -118,7 +118,7 @@ Ttj_M3_num         = f_Ttj_M3.Get('hNGenEvents').GetBinContent(1)
 # =====================================================
 
 # Legend
-leg = TLegend(0.70,0.90,0.92,0.60)
+leg = TLegend(0.70,0.90,0.96,0.60)
 leg.SetBorderSize(0)
 leg.SetFillColor(10)
 leg.SetLineColor(10)

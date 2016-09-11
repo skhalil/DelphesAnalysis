@@ -138,9 +138,12 @@ h_TbjM1       = getHisto(TbjM1Label,      TbjM1Leg,    var,  TbjM1,     kBlack, 
 h_TbjM1p5     = getHisto(TbjM1p5Label,    TbjM1p5Leg,  var,  TbjM1p5,   kBlue+2,    verbose)
 h_TbjM2       = getHisto(TbjM2Label,      TbjM2Leg,    var,  TbjM2,     kBlue+3,    verbose)  
 h_TbjM2p5     = getHisto(TbjM2p5Label,    TbjM2p5Leg,  var,  TbjM2p5,   kBlue-9,    verbose)
-h_TbjM3       = getHisto(TbjM3Label,      TbjM3Leg,    var,  TbjM3,     kBlue-3,    verbose)  
-
-
+h_TbjM3       = getHisto(TbjM3Label,      TbjM3Leg,    var,  TbjM3,     kBlue-3,    verbose) 
+h_TtjM1       = getHisto(TtjM1Label,      TtjM1Leg,    var,  TtjM1,     kOrange,     verbose)  
+h_TtjM1p5     = getHisto(TtjM1p5Label,    TtjM1p5Leg,  var,  TtjM1p5,   kYellow+2,    verbose)
+h_TtjM2       = getHisto(TtjM2Label,      TtjM2Leg,    var,  TtjM2,     kYellow+3,    verbose)  
+h_TtjM2p5     = getHisto(TtjM2p5Label,    TtjM2p5Leg,  var,  TtjM2p5,   kYellow-9,    verbose)
+h_TtjM3       = getHisto(TtjM3Label,      TtjM3Leg,    var,  TtjM3,     kYellow-3,    verbose)  
 
 h_tot =  h_top.Clone()
 h_tot.Add(h_vJet)
@@ -160,6 +163,11 @@ templates.append(h_TbjM1p5)
 templates.append(h_TbjM2)
 templates.append(h_TbjM2p5)
 templates.append(h_TbjM3)
+templates.append(h_TtjM1)
+templates.append(h_TtjM1p5)
+templates.append(h_TtjM2)
+templates.append(h_TtjM2p5)
+templates.append(h_TtjM3)
 
 #histo properties
 nBins = h_top.GetNbinsX()
@@ -206,7 +214,7 @@ if drawLog == '1':
     gPad.SetLogy()
 
 hs.Draw("Hist")
-for ihist in reversed(templates[5:10]):
+for ihist in reversed(templates[5:15]):
     print ihist.GetName()
     ihist.Draw("same, hist")     
 
