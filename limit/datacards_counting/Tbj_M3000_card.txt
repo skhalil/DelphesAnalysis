@@ -10,10 +10,10 @@ observation 0
 # the second 'process' line must have a positive number for backgrounds, and 0 for signal 
 # then we list the independent sources of uncertainties, and give their effect (syst. error) 
 # on each process and bin 
-bin                         1         1         1          
-process                     Tbj_M3000  top       vjets      
+bin                         TPrimeMRecoBoost  TPrimeMRecoBoost  TPrimeMRecoBoost   
+process                     Tbj_M3000h  allTop_h  allVJet_h   
 process                     0         1         2          
-rate                        82890.0000  2201757.1909  213013.0014  
+rate                        46633.9138  2201757.1909  213013.0014  
 --------------------------------------------------------------------------
 lumi         lnN            1.0150    1.015     1.015     lumi 
 norm_ttbar   lnN            -         1.1600    -          ttbar normalization 

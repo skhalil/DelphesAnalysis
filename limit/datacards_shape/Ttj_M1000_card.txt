@@ -2,6 +2,8 @@ imax 1  number of channels
 jmax 2  number of backgrounds 
 kmax 9  number of nuisance parameters 
 ------------------------------------------- 
+shapes * * all_withData.root $PROCESS$CHANNEL 
+------------------------------------------- 
 # we have just one channel, in which we observe x data events 
 bin         1        
 observation 0        

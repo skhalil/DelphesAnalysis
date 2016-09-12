@@ -91,7 +91,7 @@ def prepareRatio(h_ratio, h_ratiobkg, xTitle):
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option('--var', metavar='V', type='string', action='store',
-                  default='hTPrimeMRecoBoost',
+                  default='TPrimeMRecoBoost',
                   dest='var',
                   help='var to get')
 
@@ -99,6 +99,11 @@ parser.add_option('--plot',action='store_true',
                   default=False,
                   dest='plot',
                   help='plot the distribution')
+
+parser.add_option('--shape',action='store_true',
+                  default=False,
+                  dest='shape',
+                  help='cards for shape analysis')
 
 parser.add_option('--latex',action='store_true',
                   default=False,
@@ -108,49 +113,27 @@ parser.add_option('--latex',action='store_true',
 (options,args) = parser.parse_args()
 # ==========end: options =============
 var = options.var
+s = options.shape
 Path = 'inputFiles/'
 f = TFile(Path+'all.root')
 histMass = []
 templates = []
 mass = ['1000', '1500', '2000', '2500', '3000']
 
-h_top  = f.Get('Top_'+var).Clone()
-h_vjet  = f.Get('VJets_'+var).Clone()
-h_singTop = f.Get('st_'+var).Clone()
-h_vv      = f.Get('vv_'+var).Clone()
-
-#add single top and top backgrounds
-h_alltop = h_top.Clone()
-h_alltop.Reset()
-n =  h_alltop.GetName(); old = n.split('_')[0]; new = n.replace(old, 'allTop')
-h_alltop.SetName(new)
-h_alltop.Add(h_top)
-h_alltop.Add(h_singTop)
-
-#add vjet and vv backgrounds
-h_allvjet = h_vjet.Clone()
-h_allvjet.Reset()
-n1 =  h_allvjet.GetName(); old1 = n1.split('_')[0]; new1 = n1.replace(old1, 'allVJet')
-h_allvjet.SetName(new1)
-h_allvjet.Add(h_vjet)
-h_allvjet.Add(h_vv)
-
-# sum all the backgrounds
-h_total = h_top.Clone()
-h_total.Reset()
-nt =  h_total.GetName(); oldt = nt.split('_')[0]; newt = n.replace(oldt, 'total')
-h_total.SetName(newt)
-h_total.Add(h_top)
-h_total.Add(h_singTop)
-h_total.Add(h_vjet)
-h_total.Add(h_vv)
+h_top  = f.Get('Top_h'+var).Clone()
+h_vjet  = f.Get('VJets_h'+var).Clone()
+h_singTop = f.Get('st_h'+var).Clone()
+h_vv      = f.Get('vv_h'+var).Clone()
+h_alltop  = f.Get('allTop_h'+var).Clone()
+h_allvjet  = f.Get('allVJet_h'+var).Clone()
+h_total    = f.Get('Tot_h'+var).Clone()
 
 templates.append(h_alltop)
 templates.append(h_allvjet)
 templates.append(h_total)
 
 for m in mass:
-    h_VLQ =  f.Get('Tbj_M'+m+var)
+    h_VLQ =  f.Get('Tbj_M'+m+'h'+var)
     histMass.append(h_VLQ)
     if m == '1000':
         templates.append(h_VLQ)
@@ -166,7 +149,7 @@ integralError = Double(5)
 
 for h in histMass:
     vlq = h.GetName()#.split('_')[1]
-    vlq = vlq.replace(var, '')
+    vlq = vlq.replace('h'+var, '')
     
     h.IntegralAndError(bin1,bin2,integralError)  
     sig    = h.Integral(bin1,bin2)          ; sig_e     = integralError
@@ -178,11 +161,15 @@ for h in histMass:
     allvjet= h_allvjet.Integral(bin1,bin2)  ; allvjet_e =  integralError
     
     print 'sig events: ', sig
-    d_out = open('datacards/'+vlq+'_card.txt', 'w')   
+    if s: d_out = open('datacards_shape/'+vlq+'_card.txt', 'w')  
+    else: d_out = open('datacards_counting/'+vlq+'_card.txt', 'w')   
     d_out.write("imax 1  number of channels \n")
     d_out.write("jmax 2  number of backgrounds \n")
     d_out.write("kmax 9  number of nuisance parameters \n")
     d_out.write("------------------------------------------- \n")
+    if s: 
+        d_out.write("shapes * * all_withData.root $PROCESS$CHANNEL \n")
+        d_out.write("------------------------------------------- \n")
     d_out.write("# we have just one channel, in which we observe x data events \n")
     d_out.write("bin         {0:<8} \n".format('1'))  
     d_out.write("observation {0:<8} \n".format('0'))      
@@ -191,8 +178,8 @@ for h in histMass:
     d_out.write("# the second 'process' line must have a positive number for backgrounds, and 0 for signal \n")
     d_out.write("# then we list the independent sources of uncertainties, and give their effect (syst. error) \n")
     d_out.write("# on each process and bin \n")
-    d_out.write("bin                         {0:<8}  {1:<8}  {2:<8}   \n".format('1', '1', '1') ) 
-    d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format(vlq, 'top', 'vjets'))      
+    d_out.write("bin                         {0:<8}  {1:<8}  {2:<8}   \n".format(var, var, var) ) 
+    d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format(vlq+'h', 'allTop_h', 'allVJet_h'))      
     d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format('0', '1', '2'))
     d_out.write("rate                        {0:<8.4f}  {1:<8.4f}  {2:<8.4f}  \n".format(sig, alltop, allvjet)) 
     d_out.write("--------------------------------------------------------------------------\n")
