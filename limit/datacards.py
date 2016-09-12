@@ -101,7 +101,7 @@ parser.add_option('--plot',action='store_true',
                   help='plot the distribution')
 
 parser.add_option('--shape',action='store_true',
-                  default=False,
+                  default=True,
                   dest='shape',
                   help='cards for shape analysis')
 
@@ -127,6 +127,7 @@ h_vv      = f.Get('vv_h'+var).Clone()
 h_alltop  = f.Get('allTop_h'+var).Clone()
 h_allvjet  = f.Get('allVJet_h'+var).Clone()
 h_total    = f.Get('Tot_h'+var).Clone()
+h_data     = f.Get('dummyData_h'+var).Clone()
 
 templates.append(h_alltop)
 templates.append(h_allvjet)
@@ -153,13 +154,16 @@ for h in histMass:
     
     h.IntegralAndError(bin1,bin2,integralError)  
     sig    = h.Integral(bin1,bin2)          ; sig_e     = integralError
-    
+
     h_alltop.IntegralAndError(bin1,bin2,integralError)
-    alltop = h_alltop.Integral(bin1,bin2)   ; alltop_e   = integralError
+    alltop = h_alltop.Integral(bin1,bin2)   ; alltop_e   = integralError    
 
     h_allvjet.IntegralAndError(bin1,bin2,integralError)
     allvjet= h_allvjet.Integral(bin1,bin2)  ; allvjet_e =  integralError
-    
+     
+    dataName = h_data.GetName().split('_')[1]
+    #print dataName
+
     print 'sig events: ', sig
     if s: d_out = open('datacards_shape/'+vlq+'_card.txt', 'w')  
     else: d_out = open('datacards_counting/'+vlq+'_card.txt', 'w')   
@@ -168,10 +172,10 @@ for h in histMass:
     d_out.write("kmax 9  number of nuisance parameters \n")
     d_out.write("------------------------------------------- \n")
     if s: 
-        d_out.write("shapes * * all_withData.root $PROCESS$CHANNEL \n")
+        d_out.write("shapes * * all_withData.root $PROCESS$CHANNEL \n")#.format(h_data.GetNa)
         d_out.write("------------------------------------------- \n")
     d_out.write("# we have just one channel, in which we observe x data events \n")
-    d_out.write("bin         {0:<8} \n".format('1'))  
+    d_out.write("bin         {0:<8} \n".format(var))  
     d_out.write("observation {0:<8} \n".format('0'))      
     d_out.write("--------------------------------------------------------------------------\n")        
     d_out.write("# now we list the expected events for sig and all backgrounds in that bin \n")
@@ -181,7 +185,7 @@ for h in histMass:
     d_out.write("bin                         {0:<8}  {1:<8}  {2:<8}   \n".format(var, var, var) ) 
     d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format(vlq+'h', 'allTop_h', 'allVJet_h'))      
     d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format('0', '1', '2'))
-    d_out.write("rate                        {0:<8.4f}  {1:<8.4f}  {2:<8.4f}  \n".format(sig, alltop, allvjet)) 
+    d_out.write("rate                        {0:<8.0f}  {1:<8.0f}  {2:<8.0f}  \n".format(sig, alltop, allvjet)) 
     d_out.write("--------------------------------------------------------------------------\n")
     
     d_out.write("lumi         lnN            {0:<8.4f}  {1:<8}  {2:<8}  lumi \n".format(1.015, 1.015, 1.015))
