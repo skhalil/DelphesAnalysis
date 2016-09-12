@@ -13,7 +13,7 @@ observation 0
 bin                         1         1         1          
 process                     Tbj_M1500  top       vjets      
 process                     0         1         2          
-rate                        131150.0000  2446946.1863  213013.0014  
+rate                        131150.0000  2201757.1909  213013.0014  
 --------------------------------------------------------------------------
 lumi         lnN            1.0150    1.015     1.015     lumi 
 norm_ttbar   lnN            -         1.1600    -          ttbar normalization 
