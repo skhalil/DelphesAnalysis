@@ -3,7 +3,7 @@ jmax 2  number of backgrounds
 kmax 9  number of nuisance parameters 
 ------------------------------------------- 
 # we have just one channel, in which we observe x data events 
-bin         1        
+bin         TPrimeMRecoBoost 
 observation 0        
 --------------------------------------------------------------------------
 # now we list the expected events for sig and all backgrounds in that bin 
@@ -13,7 +13,7 @@ observation 0
 bin                         TPrimeMRecoBoost  TPrimeMRecoBoost  TPrimeMRecoBoost   
 process                     Ttj_M1000h  allTop_h  allVJet_h   
 process                     0         1         2          
-rate                        93301.5844  2201757.1909  213013.0014  
+rate                        93302     2201757   213013    
 --------------------------------------------------------------------------
 lumi         lnN            1.0150    1.015     1.015     lumi 
 norm_ttbar   lnN            -         1.1600    -          ttbar normalization 

@@ -15,7 +15,7 @@ observation 0
 bin                         TPrimeMRecoBoost  TPrimeMRecoBoost  TPrimeMRecoBoost   
 process                     Tbj_M1500h  allTop_h  allVJet_h   
 process                     0         1         2          
-rate                        73784.9897  2201757.1909  213013.0014  
+rate                        73785     2201757   213013    
 --------------------------------------------------------------------------
 lumi         lnN            1.0150    1.015     1.015     lumi 
 norm_ttbar   lnN            -         1.1600    -          ttbar normalization 
