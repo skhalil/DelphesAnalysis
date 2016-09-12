@@ -5,7 +5,7 @@ kmax 9  number of nuisance parameters
 shapes * * all_withData.root $PROCESS$CHANNEL 
 ------------------------------------------- 
 # we have just one channel, in which we observe x data events 
-bin         1        
+bin         TPrimeMRecoBoost        
 observation 0        
 --------------------------------------------------------------------------
 # now we list the expected events for sig and all backgrounds in that bin 
