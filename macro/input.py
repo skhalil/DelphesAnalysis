@@ -67,16 +67,16 @@ BB_700_1300_xs    = 4.13743     * gSF * 1.00
 BB_1300_2100_xs   = 0.41702     * gSF * 1.00
 BB_2100_100000_xs = 0.04770     * gSF * 1.00
 
-Tbj_M1_xs         = 1.0; #0.2;
-Tbj_M1p5_xs       = 1.0;
-Tbj_M2_xs         = 1.0;
-Tbj_M2p5_xs       = 1.0;
-Tbj_M3_xs         = 1.0;
-Ttj_M1_xs         = 1.0; #0.2;
-Ttj_M1p5_xs       = 1.0;
-Ttj_M2_xs         = 1.0;
-Ttj_M2p5_xs       = 1.0;
-Ttj_M3_xs         = 1.0;
+Tbj_M1_xs         = 1.0 * gSF * 0.58; #0.2;
+Tbj_M1p5_xs       = 1.0 * gSF * 0.58;
+Tbj_M2_xs         = 1.0 * gSF * 0.58;
+Tbj_M2p5_xs       = 1.0 * gSF * 0.58;
+Tbj_M3_xs         = 1.0 * gSF * 0.58;
+Ttj_M1_xs         = 1.0 * gSF * 0.58; #0.2;
+Ttj_M1p5_xs       = 1.0 * gSF * 0.58;
+Ttj_M2_xs         = 1.0 * gSF * 0.58;
+Ttj_M2p5_xs       = 1.0 * gSF * 0.58;
+Ttj_M3_xs         = 1.0 * gSF * 0.58;
 
 #===== generated events==========
 tt_0_600_num       = f_tt_0_600.Get('hNGenEvents').GetBinContent(1)
@@ -112,6 +112,7 @@ Ttj_M1p5_num       = f_Ttj_M1p5.Get('hNGenEvents').GetBinContent(1)
 Ttj_M2_num         = f_Ttj_M2.Get('hNGenEvents').GetBinContent(1)
 Ttj_M2p5_num       = f_Ttj_M2p5.Get('hNGenEvents').GetBinContent(1)
 Ttj_M3_num         = f_Ttj_M3.Get('hNGenEvents').GetBinContent(1)
+
 
 # =====================================================
 #  VARIABLES           
@@ -181,6 +182,7 @@ def getHisto( label, leg, var, Samples, color, verbose) :
                 )
         hist.Sumw2()
         hist.Scale( xs * lumi /nevt)
+        #hist.SetName(leg+hist.GetName())
         histos.append( hist )
 
     histo = histos[0]
