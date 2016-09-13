@@ -73,7 +73,7 @@ TbjM2p5Leg    = 'Tbj_M2.5 (T #rightarrow tH), 1pb'
 TbjM3Label    = 'Tbj_M3000'
 TbjM3Leg      = 'Tbj_M3 (T #rightarrow tH), 1pb'
 
-TtjM1Label    = 'Ttjt_M1000'
+TtjM1Label    = 'Ttj_M1000'
 TtjM1Leg      = 'Ttj_M1 (T #rightarrow tH), 1pb'
 TtjM1p5Label  = 'Ttj_M1500'
 TtjM1p5Leg    = 'Ttj_M1.5 (T #rightarrow tH), 1pb'
@@ -130,6 +130,18 @@ TtjM2  = [[f_Ttj_M2,        Ttj_M2_xs,              Ttj_M2_num,              lum
 TtjM2p5= [[f_Ttj_M2p5,      Ttj_M2p5_xs,            Ttj_M2p5_num,            lumi]]
 TtjM3  = [[f_Ttj_M3,        Ttj_M3_xs,              Ttj_M3_num,              lumi]]
 
+#TbjM1  = [[f_Tbj_M1,        Tbj_M1_xs,              1.,              1.]]
+#TbjM1p5= [[f_Tbj_M1p5,      Tbj_M1p5_xs,            1.,              1.]]
+#TbjM2  = [[f_Tbj_M2,        Tbj_M2_xs,              1.,              1.]]
+#TbjM2p5= [[f_Tbj_M2p5,      Tbj_M2p5_xs,            1.,              1.]]
+#TbjM3  = [[f_Tbj_M3,        Tbj_M3_xs,              1.,              1.]]
+
+#TtjM1  = [[f_Ttj_M1,        Ttj_M1_xs,              1.,              1.]]
+#TtjM1p5= [[f_Ttj_M1p5,      Ttj_M1p5_xs,            1.,              1.]]
+#TtjM2  = [[f_Ttj_M2,        Ttj_M2_xs,              1.,              1.]]
+#TtjM2p5= [[f_Ttj_M2p5,      Ttj_M2p5_xs,            1.,              1.]]
+#TtjM3  = [[f_Ttj_M3,        Ttj_M3_xs,              1.,              1.]]
+
 h_top         = getHisto(topLabel,        topLeg,      var,  top,       8,          verbose)
 h_vJet        = getHisto(vJetsLabel,      vJetsLeg,    var,  vJets,     kBlue,      verbose)
 h_st          = getHisto(stopLabel,       stopLeg,     var,  st,        kCyan,      verbose)
@@ -145,10 +157,37 @@ h_TtjM2       = getHisto(TtjM2Label,      TtjM2Leg,    var,  TtjM2,     kYellow+
 h_TtjM2p5     = getHisto(TtjM2p5Label,    TtjM2p5Leg,  var,  TtjM2p5,   kYellow-9,    verbose)
 h_TtjM3       = getHisto(TtjM3Label,      TtjM3Leg,    var,  TtjM3,     kYellow-3,    verbose)  
 
+#add single top and top backgrounds
+h_alltop = h_top.Clone()
+h_alltop.Reset()
+n =  h_alltop.GetName(); old = n.split('_')[0]; new = n.replace(old, 'allTop')
+h_alltop.SetName(new)
+h_alltop.Add(h_top)
+h_alltop.Add(h_st)
+
+#add vjet and vv backgrounds
+h_allvJet = h_vJet.Clone()
+h_allvJet.Reset()
+n1 =  h_allvJet.GetName(); old1 = n1.split('_')[0]; new1 = n1.replace(old1, 'allVJet')
+h_allvJet.SetName(new1)
+h_allvJet.Add(h_vJet)
+h_allvJet.Add(h_vv)
+
+#total 
 h_tot =  h_top.Clone()
+h_tot.Reset()
+n2 =  h_tot.GetName(); old2 = n2.split('_')[0]; new2 = n2.replace(old2, 'Tot')
+h_tot.SetName(new2)
+h_tot.Add(h_top)
 h_tot.Add(h_vJet)
 h_tot.Add(h_st)
 h_tot.Add(h_vv)
+
+#dummy data
+h_data =  h_top.Clone()
+h_data.Reset()
+n3 =  h_data.GetName(); old3 = n3.split('_')[0]; new3 = n3.replace(old3, 'data_obs')
+h_data.SetName(new3)
 
 c1 = TCanvas('c1', 'c1', 1000, 600)
 
@@ -168,6 +207,9 @@ templates.append(h_TtjM1p5)
 templates.append(h_TtjM2)
 templates.append(h_TtjM2p5)
 templates.append(h_TtjM3)
+templates.append(h_alltop)
+templates.append(h_allvJet)
+templates.append(h_data)
 
 #histo properties
 nBins = h_top.GetNbinsX()
@@ -184,7 +226,11 @@ integralError = Double(5)
 for ihist in templates :
     if var != 'hEff': overUnderFlow(ihist)
     ihist.IntegralAndError(bin1,bin2,integralError)
-    print '{0:<5} & {1:<5.2f} $\pm$ {2:<5.2f} \\\\ '.format(ihist.GetName().split('_')[1], ihist.Integral(bin1,bin2), integralError)
+    if 'Tbj' in ihist.GetName() or 'Ttj' in ihist.GetName():
+        hname = ihist.GetName().split('_')[0]+'_'+ihist.GetName().split('_')[1]
+    else:
+        hname = ihist.GetName().split('_')[0]
+    print '{0:<5} & {1:<5.2f} $\pm$ {2:<5.2f} \\\\ '.format(hname, ihist.Integral(bin1,bin2), integralError)
     ihist.Write() 
 print '\hline'
 
@@ -216,8 +262,9 @@ if drawLog == '1':
 hs.Draw("Hist")
 for ihist in reversed(templates[5:15]):
     print ihist.GetName()
+    #ihist.Scale(1/300000.)
     ihist.Draw("same, hist")     
-
+    
 xTitle= h_top.GetXaxis().GetTitle()
 yTitle= h_top.GetYaxis().GetTitle()
 
