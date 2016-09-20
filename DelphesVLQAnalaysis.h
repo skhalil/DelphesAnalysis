@@ -390,9 +390,10 @@ double DelphesVLQAnalysis::GetChi2Boosted(vector<TLorentzVector> ak4jetsP4, vect
    dR_topH = abs( topP4.DeltaR(higgsP4) - 3.15);
    dR_topH_chi2 = dR_topH*dR_topH/ (0.196*0.196);
    dR = topP4.DeltaR(higgsP4);
-
-   //cout << "higgs mass = " << higgsP4.M() <<", top mass = " << topP4.M() <<", dR " << dR << endl;
-   return top_chi2 + higgs_chi2 + dR_topH_chi2;
+    
+   //cout << "higgs mass = " << higgsP4.M() <<", top mass = " << topP4.M() <<", dR " << dR << ", dR(j,H) = " << ak4jetsP4[0].DeltaR(higgsP4) << endl;  
+   if (ak4jetsP4[0].DeltaR(higgsP4) < 1.0 ) {return 100000.;}
+   else {return top_chi2 + higgs_chi2 + dR_topH_chi2;}
 }
 
 double DelphesVLQAnalysis::GetChi2(vector<TLorentzVector> jetsP4, TLorentzVector LeptonP4, TLorentzVector NuP4, double topMass, double higgsMass, TLorentzVector& topP4, TLorentzVector& higgsP4, double& dR){
@@ -411,8 +412,10 @@ double DelphesVLQAnalysis::GetChi2(vector<TLorentzVector> jetsP4, TLorentzVector
    dR_topH_chi2 = dR_topH*dR_topH/ (0.196*0.196);
    dR = topP4.DeltaR(higgsP4);
 
-   //cout << "higgs mass = " << higgsP4.M() <<", top mass = " << topP4.M() <<", dR " << dR << endl;
-   return top_chi2 + higgs_chi2 + dR_topH_chi2;
+   //cout << "higgs mass = " << higgsP4.M() <<", top mass = " << topP4.M() <<", dR " << dR << ", dR(j,H) = " << jetsP4[0].DeltaR(higgsP4) << endl;
+   if (jetsP4[0].DeltaR(higgsP4) < 1.0 ) {return 100000.;}
+   else {return top_chi2 + higgs_chi2 + dR_topH_chi2;}
+   //return top_chi2 + higgs_chi2 + dR_topH_chi2;
 }
 
 
@@ -424,7 +427,7 @@ void  DelphesVLQAnalysis::DoMassRecoBoost(vector<const Jet*> &ak4Jets, vector<co
    TLorentzVector topP4, higgsP4;
   
      if (higgsJets.size() > 0){
-        //cout << "do mass reconstruction for the boosted Higgs case" << endl;
+        // cout << "do mass reconstruction for the boosted Higgs case" << endl;
       do{ 
          int i0 = index_array[0];
          int i1 = index_array[1];
@@ -434,9 +437,7 @@ void  DelphesVLQAnalysis::DoMassRecoBoost(vector<const Jet*> &ak4Jets, vector<co
          topP4.Clear();
          higgsP4.Clear();
 
-         // if (ak4Jets.size() == 1){
-         ak4JetsP4[0] = ak4Jets.at(i0)->P4();
-            //}
+         ak4JetsP4[0] = ak4Jets.at(i0)->P4();         
          if (ak4Jets.size() > 1){
             ak4JetsP4[1] = ak4Jets.at(i1)->P4();
          }
@@ -466,7 +467,7 @@ void  DelphesVLQAnalysis::DoMassRecoBoost(vector<const Jet*> &ak4Jets, vector<co
      } 
      //cout << "function: chi2: " << chi2_dR.first << ", function: dR: " << chi2_dR.second << endl;
 /*
-    if(chi2 != 100000){ 
+     if(chi2 != 100000.){ 
        cout <<"chi2 =  "<< chi2_top.first << ", higgs M = " <<  chi2_higgs.second.M() << ", top M = " <<  chi2_top.second.M() << ", dR = " << chi2_dR.second << ", T mass  = " << (chi2_higgs.second + chi2_top.second).M() << endl;
        //cout << "dR_Ht = " << dR_Ht << endl;
      }

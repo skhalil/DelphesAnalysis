@@ -167,8 +167,8 @@ void DelphesVLQAnalysis::Loop(){
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt);
                 
-      // 5 - Require Njets >= 3 central
-      if(jets->size() < 3) continue;
+      // 5 - Require Njets >= 2 central
+      if(jets->size() < 2) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt);
      
@@ -196,7 +196,7 @@ void DelphesVLQAnalysis::Loop(){
       Int_t nb = 0;
       for(i = 0; i < goodjets->size(); ++i){
          jet1 = goodjets->at(i);
-         Bool_t BtagOk_medium = ( jet1->BTag & (1 << 2) );
+         Bool_t BtagOk_medium = ( jet1->BTag & (1 << 1) );
          if(BtagOk_medium) {
             nb++;
             bjets->push_back(jet1);
@@ -250,7 +250,7 @@ void DelphesVLQAnalysis::Loop(){
       double sol1 = 0, sol2 = 0;
       bool isNuPz = SolveNuPz(leptonP4, nuP4, 80.4, sol1, sol2);
 
-      // take the minimum of the two soloutions, and reset the P4 of neutrino      
+      // take the minimum of the two soloutions, and reset the P4 of neutrino
       nuP4.SetPz(sol1);
       AdjustEnergyForMass(nuP4, 0.);
 
@@ -283,17 +283,19 @@ void DelphesVLQAnalysis::Loop(){
                WPtBoost     = (leptonP4 + nuP4).Pt();
                TpMBoost     = (chi2_higgs_boost.second + chi2_top_boost.second).M();  
                TpPtBoost    = (chi2_higgs_boost.second + chi2_top_boost.second).Pt();
-        
-               hName["hHiggsMRecoBoost"]->Fill(higgsMBoost, evtwt);
-               hName["hHiggsPtBoost"]->Fill(higgsPtBoost, evtwt);
-               hName["hTopMRecoBoost"]->Fill(topMBoost, evtwt);
-               hName["hTopPtBoost"]->Fill(topPtBoost, evtwt);
-               hName["hWMRecoBoost"]->Fill(WMBoost, evtwt);
-               hName["hWPtRecoBoost"]->Fill(WPtBoost, evtwt);
-               hName["hTPrimeMRecoBoost"]->Fill(TpMBoost, evtwt);
+
                hName["hTPrimePtBoost"]->Fill(TpPtBoost, evtwt); 
-               hName["hSTBoost"]->Fill(ST, evtwt); 
-            }
+               if (TpPtBoost > 100.){
+                  hName["hHiggsMRecoBoost"]->Fill(higgsMBoost, evtwt);
+                  hName["hHiggsPtBoost"]->Fill(higgsPtBoost, evtwt);
+                  hName["hTopMRecoBoost"]->Fill(topMBoost, evtwt);
+                  hName["hTopPtBoost"]->Fill(topPtBoost, evtwt);
+                  hName["hWMRecoBoost"]->Fill(WMBoost, evtwt);
+                  hName["hWPtRecoBoost"]->Fill(WPtBoost, evtwt);
+                  hName["hTPrimeMRecoBoost"]->Fill(TpMBoost, evtwt);
+                  hName["hSTBoost"]->Fill(ST, evtwt); 
+               }//top pt
+            }//dR cut
          }
       }
       else{//resolved case 
@@ -311,18 +313,19 @@ void DelphesVLQAnalysis::Loop(){
                WPt     = (leptonP4 + nuP4).Pt();
                TpM     = (chi2_higgs.second + chi2_top.second).M();  
                TpPt    = (chi2_higgs.second + chi2_top.second).Pt();
-
-               hName["hHiggsMReco"]->Fill(higgsM, evtwt);
-               hName["hHiggsPt"]->Fill(higgsPt, evtwt);
-               hName["hTopMReco"]->Fill(topM, evtwt);
-               hName["hTopPt"]->Fill(topPt, evtwt);
-               hName["hWMReco"]->Fill(WM, evtwt);
-               hName["hWPtReco"]->Fill(WPt, evtwt);
-               hName["hTPrimeMReco"]->Fill(TpM, evtwt);
                hName["hTPrimePt"]->Fill(TpPt, evtwt);
-               if(nb==1) {hName["hTPrimeMReco_1bjet"]->Fill(TpM, evtwt);}
-               else      {hName["hTPrimeMReco_2bjet"]->Fill(TpM, evtwt);}
-               hName["hSTResolved"]->Fill(ST, evtwt);
+               if (TpPt > 100.){
+                  hName["hHiggsMReco"]->Fill(higgsM, evtwt);
+                  hName["hHiggsPt"]->Fill(higgsPt, evtwt);
+                  hName["hTopMReco"]->Fill(topM, evtwt);
+                  hName["hTopPt"]->Fill(topPt, evtwt);
+                  hName["hWMReco"]->Fill(WM, evtwt);
+                  hName["hWPtReco"]->Fill(WPt, evtwt);
+                  hName["hTPrimeMReco"]->Fill(TpM, evtwt);              
+                  if(nb==1) {hName["hTPrimeMReco_1bjet"]->Fill(TpM, evtwt);}
+                  else      {hName["hTPrimeMReco_2bjet"]->Fill(TpM, evtwt);}
+                  hName["hSTResolved"]->Fill(ST, evtwt);
+               }
             }
             //qualityCutsResolved = (chi2_higgs.second.DeltaR(leptonP4) > 1.0) || (higgsM < 160 && higgsM > 90); 
          }
@@ -382,7 +385,7 @@ void DelphesVLQAnalysis::bookHisto(){
                               "== 1 lep", 
                               "#Delta p_{T,rel} > 30 && #Delta R(l, jet) > 0.4",
                               "N(fjet) #geq 1", 
-                              "N(jet) #geq 3", 
+                              "N(jet) #geq 2", 
                               "leading jet pt > 200", 
                               "2nd jet pt > 80", 
                               "N(b jet) #geq 1",

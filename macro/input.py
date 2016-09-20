@@ -6,7 +6,7 @@ from ROOT import TH1D,TFile,TLegend
 #  INPUTS               
 # =====================================================
 gSF = 0.97 #trigger SF
-path = '/uscms_data/d2/skhalil/Delphes2/CMSSW_8_0_4/src/DelphesAnalysis/condor/Histo_Sep9/'
+path = '/uscms_data/d2/skhalil/Delphes2/CMSSW_8_0_4/src/DelphesAnalysis/condor/Histo_Sep20/'
 
 f_tt_0_600        =  TFile(path+'tt-4p-0-600.root')
 f_tt_600_1100     =  TFile(path+'tt-4p-600-1100.root')
@@ -118,8 +118,9 @@ Ttj_M3_num         = f_Ttj_M3.Get('hNGenEvents').GetBinContent(1)
 #  VARIABLES           
 # =====================================================
 
+#(x1,y1,x2,y2) #y2 drags to lower vertically, x2  drags to left side, and so on
 # Legend
-leg = TLegend(0.70,0.90,0.96,0.60)
+leg = TLegend(0.70,0.90,0.94,0.44) 
 leg.SetBorderSize(0)
 leg.SetFillColor(10)
 leg.SetLineColor(10)
@@ -144,7 +145,7 @@ def setCosmetics(hist, legname, hname, color):
     hist.Rebin(rebinS)
     hist.SetLineColor(color)
     hist.SetName(hname)
-    #hist.SetTitle("")
+    hist.SetTitle("")
     if 'Tbj' in hname or 'Ttj' in hname:
         hist.SetLineWidth(2)
         leg.AddEntry(hist, legname, 'l')

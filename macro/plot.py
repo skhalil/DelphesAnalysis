@@ -20,11 +20,11 @@ parser.add_option('--var', metavar='T', type='string', action='store',
                   dest='var',
                   help='variable to plot')
 parser.add_option('--Lumi', metavar='D', type='float', action='store',
-                  default= 3000000., 
+                  default= 3000000.,#2300., 
                   dest='Lumi',
                   help='Data Luminosity in pb-1')
 parser.add_option('--plotDir', metavar='P', type='string', action='store',
-                  default='Sep10Plots',
+                  default='Sep19Plots',
                   dest='plotDir',
                   help='output directory of plots')
 parser.add_option('--rebin', metavar='T', type='int', action='store',
@@ -62,27 +62,27 @@ stopLeg       = 'single t'
 vvLabel       = 'vv_'
 vvLeg         = 'Diboson'
 
-TbjM1Label    = 'Tbj_M1000'
-TbjM1Leg      = 'Tbj_M1 (T #rightarrow tH), 1pb'
-TbjM1p5Label  = 'Tbj_M1500'
-TbjM1p5Leg    = 'Tbj_M1.5 (T #rightarrow tH), 1pb'
-TbjM2Label    = 'Tbj_M2000'
-TbjM2Leg      = 'Tbj_M2 (T #rightarrow tH), 1pb'
-TbjM2p5Label  = 'Tbj_M2500'
-TbjM2p5Leg    = 'Tbj_M2.5 (T #rightarrow tH), 1pb'
-TbjM3Label    = 'Tbj_M3000'
-TbjM3Leg      = 'Tbj_M3 (T #rightarrow tH), 1pb'
+TbjM1Label    = 'Tbj_M1000_'
+TbjM1Leg      = 'Tbj_M1 (T #rightarrow tH)'#, 1pb'
+TbjM1p5Label  = 'Tbj_M1500_'
+TbjM1p5Leg    = 'Tbj_M1.5 (T #rightarrow tH)'#, 1pb'
+TbjM2Label    = 'Tbj_M2000_'
+TbjM2Leg      = 'Tbj_M2 (T #rightarrow tH)'#, 1pb'
+TbjM2p5Label  = 'Tbj_M2500_'
+TbjM2p5Leg    = 'Tbj_M2.5 (T #rightarrow tH)'#, 1pb'
+TbjM3Label    = 'Tbj_M3000_'
+TbjM3Leg      = 'Tbj_M3 (T #rightarrow tH)'#, 1pb'
 
-TtjM1Label    = 'Ttj_M1000'
-TtjM1Leg      = 'Ttj_M1 (T #rightarrow tH), 1pb'
-TtjM1p5Label  = 'Ttj_M1500'
-TtjM1p5Leg    = 'Ttj_M1.5 (T #rightarrow tH), 1pb'
-TtjM2Label    = 'Ttj_M2000'
-TtjM2Leg      = 'Ttj_M2 (T #rightarrow tH), 1pb'
-TtjM2p5Label  = 'Ttj_M2500'
-TtjM2p5Leg    = 'Ttj_M2.5 (T #rightarrow tH), 1pb'
-TtjM3Label    = 'Ttj_M3000'
-TtjM3Leg      = 'Ttj_M3 (T #rightarrow tH), 1pb'
+TtjM1Label    = 'Ttj_M1000_'
+TtjM1Leg      = 'Ttj_M1 (T #rightarrow tH)'#, 1pb'
+TtjM1p5Label  = 'Ttj_M1500_'
+TtjM1p5Leg    = 'Ttj_M1.5 (T #rightarrow tH)'#, 1pb'
+TtjM2Label    = 'Ttj_M2000_'
+TtjM2Leg      = 'Ttj_M2 (T #rightarrow tH)'#, 1pb'
+TtjM2p5Label  = 'Ttj_M2500_'
+TtjM2p5Leg    = 'Ttj_M2.5 (T #rightarrow tH)'#, 1pb'
+TtjM3Label    = 'Ttj_M3000_'
+TtjM3Leg      = 'Ttj_M3 (T #rightarrow tH)'#, 1pb'
 
 # === create structure ============
 top = [
@@ -262,6 +262,8 @@ if drawLog == '1':
 hs.Draw("Hist")
 for ihist in reversed(templates[5:15]):
     print ihist.GetName()
+    #ihist.SetMaximum(10000)
+    #ihist.GetYaxis().SetTitle("a.u")
     #ihist.Scale(1/300000.)
     ihist.Draw("same, hist")     
     
