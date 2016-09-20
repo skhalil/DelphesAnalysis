@@ -127,14 +127,14 @@ h_vv      = f.Get('vv_h'+var).Clone()
 h_alltop  = f.Get('allTop_h'+var).Clone()
 h_allvjet  = f.Get('allVJet_h'+var).Clone()
 h_total    = f.Get('Tot_h'+var).Clone()
-h_data     = f.Get('dummyData_h'+var).Clone()
+h_data     = f.Get('data_obs_h'+var).Clone()
 
 templates.append(h_alltop)
 templates.append(h_allvjet)
 templates.append(h_total)
 
 for m in mass:
-    h_VLQ =  f.Get('Tbj_M'+m+'h'+var)
+    h_VLQ =  f.Get('Ttj_M'+m+'_h'+var)
     histMass.append(h_VLQ)
     if m == '1000':
         templates.append(h_VLQ)
@@ -150,7 +150,7 @@ integralError = Double(5)
 
 for h in histMass:
     vlq = h.GetName()#.split('_')[1]
-    vlq = vlq.replace('h'+var, '')
+    vlq = vlq.replace('_h'+var, '')
     
     h.IntegralAndError(bin1,bin2,integralError)  
     sig    = h.Integral(bin1,bin2)          ; sig_e     = integralError
@@ -172,18 +172,18 @@ for h in histMass:
     d_out.write("kmax 9  number of nuisance parameters \n")
     d_out.write("------------------------------------------- \n")
     if s: 
-        d_out.write("shapes * * all_withData.root $PROCESS$CHANNEL \n")#.format(h_data.GetNa)
+        d_out.write("shapes * * all.root $PROCESS$CHANNEL \n")#.format(h_data.GetNa)
         d_out.write("------------------------------------------- \n")
     d_out.write("# we have just one channel, in which we observe x data events \n")
-    d_out.write("bin         {0:<8} \n".format(var))  
+    d_out.write("bin         {0:<8} \n".format('_h'+var))  
     d_out.write("observation {0:<8} \n".format('0'))      
     d_out.write("--------------------------------------------------------------------------\n")        
     d_out.write("# now we list the expected events for sig and all backgrounds in that bin \n")
     d_out.write("# the second 'process' line must have a positive number for backgrounds, and 0 for signal \n")
     d_out.write("# then we list the independent sources of uncertainties, and give their effect (syst. error) \n")
     d_out.write("# on each process and bin \n")
-    d_out.write("bin                         {0:<8}  {1:<8}  {2:<8}   \n".format(var, var, var) ) 
-    d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format(vlq+'h', 'allTop_h', 'allVJet_h'))      
+    d_out.write("bin                         {0:<8}  {1:<8}  {2:<8}   \n".format('_h'+var, '_h'+var, '_h'+var) ) 
+    d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format(vlq, 'allTop', 'allVJet'))      
     d_out.write("process                     {0:<8}  {1:<8}  {2:<8}   \n".format('0', '1', '2'))
     d_out.write("rate                        {0:<8.0f}  {1:<8.0f}  {2:<8.0f}  \n".format(sig, alltop, allvjet)) 
     d_out.write("--------------------------------------------------------------------------\n")

@@ -2,20 +2,20 @@ imax 1  number of channels
 jmax 2  number of backgrounds 
 kmax 9  number of nuisance parameters 
 ------------------------------------------- 
-shapes * * all_withData.root $PROCESS$CHANNEL 
+shapes * * all.root $PROCESS$CHANNEL 
 ------------------------------------------- 
 # we have just one channel, in which we observe x data events 
-bin         TPrimeMRecoBoost        
+bin         _hTPrimeMRecoBoost 
 observation 0        
 --------------------------------------------------------------------------
 # now we list the expected events for sig and all backgrounds in that bin 
 # the second 'process' line must have a positive number for backgrounds, and 0 for signal 
 # then we list the independent sources of uncertainties, and give their effect (syst. error) 
 # on each process and bin 
-bin                         TPrimeMRecoBoost  TPrimeMRecoBoost  TPrimeMRecoBoost   
-process                     Ttj_M1000h  allTop_h  allVJet_h   
+bin                         _hTPrimeMRecoBoost  _hTPrimeMRecoBoost  _hTPrimeMRecoBoost   
+process                     Ttj_M1000  allTop    allVJet    
 process                     0         1         2          
-rate                        93302     2201757   213013    
+rate                        111035    2346741   360146    
 --------------------------------------------------------------------------
 lumi         lnN            1.0150    1.015     1.015     lumi 
 norm_ttbar   lnN            -         1.1600    -          ttbar normalization 
