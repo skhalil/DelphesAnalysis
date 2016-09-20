@@ -13,7 +13,10 @@ sig = "Tbj"
 for m in masspoints:
     print '-----mass = ',m ,' ----------'
     mass = str(m)
-    os.system("combine -n "+sig+" -S 0 -m "+mass+" --rMin=0.001 --rMax=0.2 -M Asymptotic datacards/"+sig+"_M"+mass+"card.txt")    
 
-os.system("hadd -f higgsCombine"+sig+".Asymptotic.root higgsCombine"+sig+".Asymptotic.mH*.root")
-os.system("rm -rf higgsCombine"+sig+".Asymptotic.mH*.root")
+    print "combine -n _Expected_"+sig+"_M"+mass+"  -M Asymptotic --run=expected limit/datacards_shape/"+sig+"_M"+mass+"_card.txt" 
+   
+    os.system("combine -n _Expected_"+sig+"_M"+mass+" -M Asymptotic --run=expected limit/datacards_shape/"+sig+"_M"+mass+"_card.txt")
+
+os.system("hadd -f higgsCombine_Expected_"+sig+".Asymptotic.root higgsCombine_Expected_"+sig+"_M*.Asymptotic.mH*.root")
+#os.system("rm -rf higgsCombine_Expected_"+sig+"_M*.Asymptotic.mH*.root")
