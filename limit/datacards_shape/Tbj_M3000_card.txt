@@ -23,6 +23,6 @@ norm_vjets   lnN            -         -         1.2000     vjets normalization
 b-tagSF      lnN            1.0270    1.0270    1.0270      b-tag SF 
 ID           lnN            1.0100    1.0100    1.0100      ID SF 
 trigger      lnN            1.0100    1.0100    1.0100      trigger SF 
-lep_iso      lnN            1.0300    1.0300    1.0300      lepton isolation SF 
+lep_iso      lnN            1.1000    1.1000    1.1000      lepton isolation SF 
 JES          lnN            1.0380    1.0380    1.0380      JES 
 JER          lnN            1.0100    1.0100    1.0100      JER 

@@ -194,7 +194,7 @@ for h in histMass:
     d_out.write("b-tagSF      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    b-tag SF \n".format(1.027, 1.027, 1.027) )
     d_out.write("ID           lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    ID SF \n".format(1.010, 1.010, 1.010) )
     d_out.write("trigger      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    trigger SF \n".format(1.010, 1.010, 1.010) )
-    d_out.write("lep_iso      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    lepton isolation SF \n".format(1.030, 1.030, 1.030) )
+    d_out.write("lep_iso      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    lepton isolation SF \n".format(1.100, 1.100, 1.100) )
     d_out.write("JES          lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    JES \n".format(1.038, 1.038, 1.038) )
     d_out.write("JER          lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    JER \n".format(1.010, 1.010, 1.010) )
     d_out.close()    

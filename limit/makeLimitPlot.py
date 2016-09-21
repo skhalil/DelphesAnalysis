@@ -1,10 +1,13 @@
 #!/usr/bin/env python
-
 import ROOT
+from ROOT import gROOT,gStyle,gPad,gStyle
+from ROOT import Double,kBlue,kRed,kOrange,kAzure,kMagenta,kYellow,kCyan,kGreen,kGray,kBlack,kDotted,kTRUE
 import imp
 import sys
 from array import array
 from collections import OrderedDict
+gROOT.Macro("~/rootlogon.C")
+gStyle.SetOptStat(0)
 
 def getLimit(model,masses):
 
@@ -20,8 +23,8 @@ def getLimit(model,masses):
   
   for mass in masses:
     i = masses.index(mass)
-    xsec = 1000./(0.97*0.58)
-    f = ROOT.TFile.Open("higgsCombine_Expected_"+model+"_M"+str(mass)+".Asymptotic.mH120.root", "r")
+    xsec = 1000.#/(0.97*0.58)
+    f = ROOT.TFile.Open("limitFiles_3000_Sep20/higgsCombine_Expected_"+model+"_M"+str(mass)+".Asymptotic.mH120.root", "r")
     limit = f.Get("limit")
     entries = limit.GetEntriesFast()
     obs = 0
@@ -48,16 +51,31 @@ def getLimit(model,masses):
 
   return grexplim, grexp1sig, grexp2sig
 
-def plotLimits(model, masses):
+def plotLimits(model, masses, run2_masses, th_xs, run2_xs ):
+  
+  grthlim = ROOT.TGraph(len(run2_masses))
+  map_th  = zip(run2_masses,th_xs)
+  grRun2lim = ROOT.TGraph(len(run2_masses))
+  map_run2 = zip(run2_masses,run2_xs)
+
+  p_th=0; p_run2=0;
+  for m,x in map_th:
+    grthlim.SetPoint(p_th, m, x)
+    p_th +=1
+  
+  for m,x in map_run2:
+    grRun2lim.SetPoint(p_run2, m, x)
+    p_run2 +=1
+
 
   grexplim, grexp1sig, grexp2sig = getLimit(model,masses)
 
-  print grexplim.GetN(), ' ', grexp1sig.GetN(), ' ', grexp2sig.GetN(), ' '
+  print grthlim.GetN(), ' ',grexplim.GetN(), ' ', grexp1sig.GetN(), ' ', grexp2sig.GetN(), ' '
 
   #return
 
-  tdrstyle = imp.load_source('tdrstyle', '/Users/dm/bin/tdrstyle.py')
-  CMS_lumi = imp.load_source('CMS_lumi', '/Users/dm/bin/CMS_lumi.py')
+  tdrstyle = imp.load_source('tdrstyle', 'tdrstyle.py')
+  CMS_lumi = imp.load_source('CMS_lumi', 'CMS_lumi.py')
   ROOT.gROOT.SetBatch()
   ROOT.gROOT.SetStyle("Plain")
   ROOT.gStyle.SetOptStat()
@@ -86,14 +104,34 @@ def plotLimits(model, masses):
   grexplim.SetLineWidth(2)
 
   grexplim.SetLineStyle(7)
+ 
 
+  ymax = grexp2sig.GetHistogram().GetMaximum()*500.0
+  ymin = grexp2sig.GetHistogram().GetMaximum()*0.01 
+  print ymax, ymin
+  #grthlim.SetMinimum(1.)
+  #grthlim.SetMaximum(1000.)
+  grthlim.SetLineStyle(kDotted)
+  grthlim.SetLineColor(kBlack)
+  grthlim.SetLineWidth(2)
+  grthlim.SetMaximum(ymax)
+  grthlim.SetMinimum(ymin)
+
+  grRun2lim.SetLineStyle(kDotted)
+  grRun2lim.SetLineColor(kRed)
+  grRun2lim.SetLineWidth(2)
+  grRun2lim.SetMaximum(ymax)
+  grRun2lim.SetMinimum(ymin)
+  
   grexplim .Draw("al")
   grexp2sig.Draw("3")
   grexp1sig.Draw("3")
   grexplim .Draw("l")
-  
-  grexplim.GetXaxis().SetRangeUser(999,3000)
-  
+  grthlim.Draw("Lsame")
+  grRun2lim.Draw("Lsame") 
+  #grthlim.GetXaxis().SetRangeUser(1000.,2000.);
+
+  grexplim.GetXaxis().SetRangeUser(999,3000)  
   grexplim.GetYaxis().SetLabelSize(0.04)
   grexplim.GetYaxis().SetTitleSize(0.04)
   grexplim.GetYaxis().SetTitleOffset(1.20)
@@ -109,19 +147,19 @@ def plotLimits(model, masses):
   grexplim.GetXaxis().SetNdivisions(510,1);
   grexplim.GetXaxis().SetTitle("M(T) [GeV]")
   if model == 'Tbj':
-    grexplim.GetYaxis().SetTitle("#sigma(pp#rightarrow Tbq)#upoint#font[52]{B}(T#rightarrow tH) [fb]")
+    grexplim.GetYaxis().SetTitle("#sigma(pp#rightarrow Tbq)#times#font[52]{B}(T#rightarrow tH) [fb]")
   elif model == 'Ttj':
-    grexplim.GetYaxis().SetTitle("#sigma(pp#rightarrow Ttq)#upoint#font[52]{B}(T#rightarrow tH) [fb]")
+    grexplim.GetYaxis().SetTitle("#sigma(pp#rightarrow Ttq)#times#font[52]{B}(T#rightarrow tH) [fb]")
   
 
-  grexplim.SetMinimum(1)
-  grexplim.SetMaximum(1000)
+  grexplim.SetMinimum(ymin)
+  grexplim.SetMaximum(ymax)
   if model == 'Tbj':
-    grexplim.SetMinimum(1)
-    grexplim.SetMaximum(1000)
+    grexplim.SetMinimum(ymin)
+    grexplim.SetMaximum(ymax)
   elif model == 'Ttj':
-    grexplim.SetMinimum(1)
-    grexplim.SetMaximum(1000)
+    grexplim.SetMinimum(ymin)
+    grexplim.SetMaximum(ymax)
   
   text = ["CMS"]
   textsize = 0.028; 
@@ -147,9 +185,11 @@ def plotLimits(model, masses):
   legend.SetMargin(0.2)
   legend.SetHeader("")
   #legend.AddEntry(grtheory , theoryline,"l") 
-  legend.AddEntry(grexplim  , "Expected 95% upper limit","l")
-  legend.AddEntry(grexp1sig , "Expected limit #pm 1 std. deviation","f")
-  legend.AddEntry(grexp2sig , "Expected limit #pm 2 std. deviation","f")
+  legend.AddEntry(grexplim  , "Expected ","l")
+  legend.AddEntry(grexp1sig , "1 s.d.","f")
+  legend.AddEntry(grexp2sig , "2 s.d.","f")
+  legend.AddEntry(grthlim, "#sigma_{th.}#times#bf{#it{#Beta}}^{2}, c=1, #bf{#it{#Beta}}(T #rightarrow tH)=100%", "l")
+  legend.AddEntry(grRun2lim, "Expected projection (13 TeV)", "l")
   legend.Draw()
   
   ### Embellishment
@@ -177,9 +217,13 @@ def plotLimits(model, masses):
     canv.SaveAs("ExpLim_ECFA2016_14TeV_"+model+"_12Sept2016"+end)
 
 masses = [1000, 1500, 2000, 2500, 3000]
-  
+run2_masses = [1000, 1500, 2000]
+Tbj_xs = [ 1.26309*1.950*1000., 1.32586*0.408*1000.,  1.40697*0.102*1000.]
+Ttj_xs = [ 1.3044*0.203*1000.,  1.37731*0.0540*1000., 1.4631*0.0162*1000.]
+run2_Tbj_xs = [0.17378*1000., 0.062428*1000., 0.041277*1000.]
+run2_Ttj_xs = [0.14993*1000., 0.053423*1000., 0.039589*1000.]
 model = 'Tbj'
-plotLimits(model, masses)
+plotLimits(model, masses, run2_masses, Tbj_xs, run2_Tbj_xs)
 
 model = 'Ttj'
-plotLimits(model, masses)
+plotLimits(model, masses, run2_masses, Ttj_xs, run2_Ttj_xs)
