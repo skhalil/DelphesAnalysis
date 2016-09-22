@@ -115,7 +115,7 @@ parser.add_option('--latex',action='store_true',
 var = options.var
 s = options.shape
 Path = 'inputFiles/'
-f = TFile(Path+'all.root')
+f = TFile(Path+'all_2p3.root')
 histMass = []
 templates = []
 mass = ['1000', '1500', '2000', '2500', '3000']
@@ -134,7 +134,7 @@ templates.append(h_allvjet)
 templates.append(h_total)
 
 for m in mass:
-    h_VLQ =  f.Get('Ttj_M'+m+'_h'+var)
+    h_VLQ =  f.Get('Tbj_M'+m+'_h'+var)
     histMass.append(h_VLQ)
     if m == '1000':
         templates.append(h_VLQ)

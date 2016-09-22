@@ -3,10 +3,20 @@ import sys
 from ROOT import TH1D,TFile,TMath,TCanvas,TLegend,TLatex,TLine
 from ROOT import gROOT,gStyle,gPad,gStyle
 from ROOT import Double,kBlue,kRed,kOrange,kMagenta,kYellow,kCyan,kGreen,kGray,kTRUE
- 
+
 gROOT.Macro("~/rootlogon.C")
 gStyle.SetOptStat(0)
- 
+#gROOT.SetBatch()
+gROOT.SetStyle("Plain")
+gStyle.SetOptTitle(0)
+gStyle.SetPalette(1)
+gStyle.SetNdivisions(405,"x");
+gStyle.SetEndErrorSize(0.)
+gStyle.SetErrorX(0.001)
+gStyle.SetPadTickX(1)
+gStyle.SetPadTickY(1)
+gStyle.SetOptStat(0) 
+
 def overUnderFlow(hist):
     xbins = hist.GetNbinsX()
     hist.SetBinContent(xbins, hist.GetBinContent(xbins)+hist.GetBinContent(xbins+1))
@@ -23,7 +33,8 @@ def binomialUnc(eff, Ngen):
     return unc
  
 # Legend
-leg = TLegend(0.70,0.91,0.94,0.60)
+#leg = TLegend(0.70,0.91,0.94,0.60)
+leg = TLegend(0.60,0.88,0.86,0.60)#44 
 leg.SetBorderSize(0)
 leg.SetFillColor(10)
 leg.SetLineColor(10)
@@ -35,10 +46,10 @@ def setCosmetics(hist, legname, hname, color, var):
     legname.split('_',0)[0]
     hist.SetLineColor(color)
     hist.GetYaxis().SetTitle('Efficieny ( '+Var+' ) %')
-    hist.GetYaxis().SetTitleOffset(1.2)
-    hist.GetYaxis().SetTitleFont(42)
+    hist.GetYaxis().SetTitleOffset(1.0)
+    hist.GetYaxis().SetTitleFont(62)
     hist.GetXaxis().SetTitleOffset(1.2)
-    hist.GetXaxis().SetTitleFont(42)
+    hist.GetXaxis().SetTitleFont(62)
     hist.SetTitle('')
     hist.SetName(hname)
     hist.SetLineWidth(2)
@@ -145,7 +156,7 @@ c1 = TCanvas('c1', 'c1', 800, 600)
  
 for h in templates :
     print h.GetName()
-    h.SetMaximum(6.0);
+    h.SetMaximum(8.0);
     h.SetMinimum(0.0);
     h.Draw("L, same, hist")
 leg.Draw()
@@ -154,13 +165,13 @@ prel = TLatex()
 prel.SetNDC(kTRUE)
 prel.SetTextFont(52)
 prel.SetTextSize(0.05)
-prel.DrawLatex(0.34,0.93,"Simulation")
+prel.DrawLatex(0.18,0.92,"Simulation")
  
 cms = TLatex()
 cms.SetNDC(kTRUE)
 cms.SetTextFont(61)
 cms.SetTextSize(0.05)
-cms.DrawLatex(0.10,0.93,"CMS-Delphes")
+cms.DrawLatex(0.10,0.92,"CMS")
 leg.Draw()
  
 ll = TLatex()

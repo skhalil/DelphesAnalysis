@@ -120,7 +120,10 @@ Ttj_M3_num         = f_Ttj_M3.Get('hNGenEvents').GetBinContent(1)
 
 #(x1,y1,x2,y2) #y2 drags to lower vertically, x2  drags to left side, and so on
 # Legend
-leg = TLegend(0.70,0.90,0.94,0.44) 
+#if var == 'hTPrimeMRecoBoost':
+#    leg = TLegend(0.88,0.88,0.86,0.60)
+#else:
+leg = TLegend(0.66,0.88,0.86,0.30)#44 
 leg.SetBorderSize(0)
 leg.SetFillColor(10)
 leg.SetLineColor(10)
@@ -159,12 +162,14 @@ def setTitle(hs,xTitle,yTitle):
     #y.SetTitle("Events / Bin")
     y.SetTitle(yTitle)
     x.SetTitle(xTitle)
-    y.SetLabelSize(0.04)
-    y.SetTitleSize(0.06)
-    y.SetTitleOffset(0.75)
-    y.SetTitleFont(42)
+    #y.SetLabelSize(0.04)
+    y.SetTitleOffset(1.0)
+    y.SetTitleFont(62)
+    x.SetTitleFont(62)
+    y.SetTitleSize(0.04)
     x.SetTitleSize(0.04)
-    x.SetTitleFont(42)
+    x.SetNdivisions(510,1)
+    
 
 def getHisto( label, leg, var, Samples, color, verbose) :
     histos = []
