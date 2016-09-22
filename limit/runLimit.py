@@ -14,7 +14,7 @@ for m in masspoints:
     print '-----mass = ',m ,' ----------'
     mass = str(m)
 
-    print "combine -n _Expected_"+sig+"_M"+mass+"  -M Asymptotic --run=expected limit/datacards_shape/"+sig+"_M"+mass+"_card.txt" 
+    print "combine -n _Expected_"+sig+"_M"+mass+"  --rMin=0.001 --rMax=0.2 -M Asymptotic --run=expected limit/datacards_shape/"+sig+"_M"+mass+"_card.txt" 
    
     os.system("combine -n _Expected_"+sig+"_M"+mass+" -M Asymptotic --run=expected limit/datacards_shape/"+sig+"_M"+mass+"_card.txt")
 

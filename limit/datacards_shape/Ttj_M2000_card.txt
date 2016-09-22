@@ -2,7 +2,7 @@ imax 1  number of channels
 jmax 2  number of backgrounds 
 kmax 9  number of nuisance parameters 
 ------------------------------------------- 
-shapes * * all.root $PROCESS$CHANNEL 
+shapes * * all_2p3.root $PROCESS$CHANNEL 
 ------------------------------------------- 
 # we have just one channel, in which we observe x data events 
 bin         _hTPrimeMRecoBoost 
@@ -15,7 +15,7 @@ observation 0
 bin                         _hTPrimeMRecoBoost  _hTPrimeMRecoBoost  _hTPrimeMRecoBoost   
 process                     Ttj_M2000  allTop    allVJet    
 process                     0         1         2          
-rate                        131193    2346741   360146    
+rate                        101       1799      276       
 --------------------------------------------------------------------------
 lumi         lnN            1.0150    1.015     1.015     lumi 
 norm_ttbar   lnN            -         1.1600    -          ttbar normalization 
