@@ -3,6 +3,7 @@
 #include <TCanvas.h>
 #include <iostream>
 #include "DelphesVLQAnalaysis.h"
+#include "BTagEfficiencyMediumOP.h"
 
 
 void DelphesVLQAnalysis::Loop(){
@@ -208,6 +209,10 @@ void DelphesVLQAnalysis::Loop(){
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt);
        
+      double btagwtup(1.), btagwtdown(1.); ////DM
+      BTagEffWtMediumOP(goodjets, btagwtup, btagwtdown) ; 
+      cout << "btagwtup " << btagwtup << " btagwtdown " << btagwtdown << endl;
+
       Float_t bjet1Pt = bjets->at(0)->P4().Pt();
       Float_t bjet1Eta= bjets->at(0)->P4().Eta(); 
      
@@ -456,4 +461,46 @@ void DelphesVLQAnalysis::bookHisto(){
    h1D("hTPrimePt", "TPrime pt", "T p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
    h1D("hdR_Ht", "#Delta R(t, H)_{reco}", "#Delta R(t, H)_{reco}", "Events",  25, 0, 5);
    h1D("hSTResolved", "S_{T}, resolved", "S_{T} [GeV]", "Events/50 GeV", 80, 0, 4000);
+}
+
+void DelphesVLQAnalysis::BTagEffWtMediumOP(const Jets jets, double& btagwtup, double& btagwtdown) { 
+
+  double varmediumoplight(0.01);
+  double varmediumopcharm(0.02); 
+  double varmediumopbottom(0.05);
+
+  double effall(1.), effallup(1.), effalldown(1.);
+
+  for(i = 0; i < goodjets->size(); ++i){
+
+     jet1 = goodjets->at(i);
+     Bool_t BtagOk_medium (jet1->BTag & (1 << 1));
+     double pt(jet1->P4().Pt()), eta(fabs(jet1->P4().Eta())), flav(fabs(jet1->Flavor)); 
+     double effjet = EfficiencyFormulaMediumOP(flav, pt, eta);
+     double effjetup(effjet), effjetdown(effjet) ; 
+
+     if      (flav <= 3 || flav == 21) effjetup   = effjet*(1+varmediumoplight);
+     else if (flav == 4)               effjetup   = effjet*(1+varmediumopcharm);
+     else if (flav == 5)               effjetup   = effjet*(1+varmediumopbottom);
+     if      (flav <= 3 || flav == 21) effjetdown = effjet*(1-varmediumoplight);
+     else if (flav == 4)               effjetdown = effjet*(1-varmediumopcharm);
+     else if (flav == 5)               effjetdown = effjet*(1-varmediumopbottom);
+
+     if(BtagOk_medium) {
+        effall     *= effjet     ; 
+        effallup   *= effjetup    ;
+        effalldown *= effjetdown ;
+     }
+     else {
+        effall     *= (1-effjet)     ; 
+        effallup   *= (1-effjetup)    ; 
+        effalldown *= (1-effjetdown) ; 
+     }
+  }
+
+  btagwtup = effallup/effall;
+  btagwtdown = effalldown/effall;
+
+  return;
+
 }
