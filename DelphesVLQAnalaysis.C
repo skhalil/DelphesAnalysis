@@ -211,7 +211,6 @@ void DelphesVLQAnalysis::Loop(){
        
       double btagwtup(1.), btagwtdown(1.); ////DM
       BTagEffWtMediumOP(goodjets, btagwtup, btagwtdown) ; 
-      cout << "btagwtup " << btagwtup << " btagwtdown " << btagwtdown << endl;
 
       Float_t bjet1Pt = bjets->at(0)->P4().Pt();
       Float_t bjet1Eta= bjets->at(0)->P4().Eta(); 
