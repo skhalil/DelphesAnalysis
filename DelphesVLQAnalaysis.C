@@ -38,8 +38,8 @@ void DelphesVLQAnalysis::Loop(){
       met = (MissingET*)branchMissingET->At(0);
       
       // Select leptons with pT, |eta|, and Iso cuts
-      CollectionFilter(*branchElectron,  *electrons , 40.0 , 4.0, 100);//100.
-      CollectionFilter(*branchMuonTight, *muons     , 40.0 , 4.0, 100);//100.
+      CollectionFilter(*branchElectron,  *electrons , 50.0 , 2.5, 100);//100.
+      CollectionFilter(*branchMuonTight, *muons     , 47.0 , 2.1, 100);//100.
       
       // 2 - N ele or muon >= 1
       if (electrons->size() + muons->size() != 1) continue;
@@ -94,25 +94,6 @@ void DelphesVLQAnalysis::Loop(){
          goodjets->push_back(jet);
       }
 
-      for(i = 0; i < branchJetAK8->GetEntriesFast(); i++){
-         ak8jet = (Jet*)branchJetAK8->At(i);
-         jetP4AK8 = ak8jet->P4(); 
-       
-         // quality cuts      
-         if(jetP4AK8.Pt() < 300.0)                continue;
-         if(TMath::Abs(jetP4AK8.Eta()) > 2.4)     continue;
-         //if(Overlaps(*ak8jet, *electrons, 0.4))   continue;
-         //if(Overlaps(*ak8jet, *muons, 0.4))       continue;
-         if(electrons->size()>0 && Overlaps2D(*ak8jets, ele1, 0.4, 40.)) continue;
-         if(muons->size()>0     && Overlaps2D(*ak8jets, mu1 , 0.4, 40.)) continue;
-         if(ak8jet->Tau[1]/ak8jet->Tau[0] > 0.6)  continue;
-         if(ak8jet->NSubJetsSoftDropped != 2 )    continue;
-         if(jetP4AK8.DeltaR(leptonP4) <= 1.0)     continue;
-         if(ak8jet->SoftDroppedP4[0].M() > 160 || ak8jet->SoftDroppedP4[0].M() < 90) continue;
-         // fill the jets as Higgs jets
-         higgsjets->push_back(ak8jet);
-        
-      }
       // - Store 2d isolation variables 
       Float_t ptRel = nearestJetP4.Perp( leptonP4.Vect() );
       TVector3 nearestJet_v3 = nearestJetP4.Vect();
@@ -172,23 +153,25 @@ void DelphesVLQAnalysis::Loop(){
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt);
      
-      // 6 - Require leading jet pt > 200 GeV
+      // 6 - Require leading jet pt cut
       Float_t jet1Pt = jets->at(0)->P4().Pt();
       Float_t jet1Eta = jets->at(0)->P4().Eta();
       hName["hLeadingJetPt"]->Fill(jet1Pt, evtwt);
       hName["hLeadingJetEta"]->Fill(jet1Eta, evtwt);
  
-      if(jet1Pt <= 200) continue;
+      if(electrons->size()>0 && jet1Pt <= 250) continue;
+      else if(muons->size()>0 && jet1Pt <= 100) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt);
 
-      // 7 - Require second leading jet pt > 80 GeV
+      // 7 - Require second leading jet pt
       Float_t jet2Pt = jets->at(1)->P4().Pt();
       Float_t jet2Eta = jets->at(1)->P4().Eta();
       hName["hSecLeadingJetPt"]->Fill(jet2Pt, evtwt);
       hName["hSecLeadingJetEta"]->Fill(jet2Eta, evtwt);
 
-      if(jet2Pt <= 80) continue;
+      if(electrons->size()>0 && jet2Pt <= 70) continue;
+      else if(muons->size()>0 && jet2Pt <= 50) continue;
       ncut++;
       hName["hEff"]->Fill(ncut, evtwt);
 
@@ -204,13 +187,17 @@ void DelphesVLQAnalysis::Loop(){
       }
 
       // 8 - Require Nbjets >= 1
-      if(nb == 0) continue;
-      ncut++;
-      hName["hEff"]->Fill(ncut, evtwt);
+      //if(nb == 0) continue;
+      //ncut++;
+      //hName["hEff"]->Fill(ncut, evtwt);
        
-      Float_t bjet1Pt = bjets->at(0)->P4().Pt();
-      Float_t bjet1Eta= bjets->at(0)->P4().Eta(); 
-     
+          
+      Float_t bjet1Pt, bjet1Eta;
+      if (nb>0){
+         bjet1Pt = bjets->at(0)->P4().Pt();
+         bjet1Eta= bjets->at(0)->P4().Eta(); 
+      }
+      
       // 9 - Require MET > 20 GeV
       if(met->P4().Pt() < 20) continue;
       ncut++; 
@@ -225,18 +212,48 @@ void DelphesVLQAnalysis::Loop(){
          HT += jets->at(i)->P4().Pt();
       }     
       ST = HT + leptonP4.Pt() + met->P4().Pt();
-
+           
+      // 8 - ST
+      if (ST < 400.) continue;
+      ncut++;
+      hName["hEff"]->Fill(ncut, evtwt);
+      
+      for(i = 0; i < branchJetAK8->GetEntriesFast(); i++){
+         ak8jet = (Jet*)branchJetAK8->At(i);
+         jetP4AK8 = ak8jet->P4(); 
+       
+         // quality cuts      
+         if(jetP4AK8.Pt() < 200.0)                continue;
+         if(TMath::Abs(jetP4AK8.Eta()) > 2.4)     continue;
+         //if(electrons->size()>0 && Overlaps2D(*ak8jets, ele1, 0.4, 40.)) {cout << "electrons overlap" << endl; continue;}
+         //if(muons->size()>0     && Overlaps2D(*ak8jets, mu1 , 0.4, 40.)) {cout << "muons overlap" << endl; continue;}
+         if(ak8jet->Tau[1]/ak8jet->Tau[0] > 0.6)  continue;
+         if(ak8jet->NSubJetsSoftDropped != 2 )    continue;
+         if(jetP4AK8.DeltaR(leptonP4) <= 1.0)     continue;
+         
+         hName["hSoftMass"]-> Fill(ak8jet->SoftDroppedP4[0].M(), evtwt); 
+         if(ak8jet->SoftDroppedP4[0].M() > 160 || ak8jet->SoftDroppedP4[0].M() < 90) continue;
+         hName["hSoftPt"]-> Fill(ak8jet->SoftDroppedP4[0].Pt(), evtwt);
+         // fill the jets as Higgs jets
+         higgsjets->push_back(ak8jet);
+        
+      }
+      
       //--------- Preselection done ---------------
+/*
       for(j = 0; j < higgsjets->size(); ++j){
          jetak8_1 = higgsjets->at(j);
          hName["hSoftMass"]-> Fill(jetak8_1->SoftDroppedP4[0].M(), evtwt); 
+         //apply a cut on softdrop mass
          hName["hSoftPt"]-> Fill(jetak8_1->SoftDroppedP4[0].Pt(), evtwt);
       }
+*/
       
       hName["hNbjets"]->Fill(nb, evtwt); 
-      hName["hLeadingbJetPt"]->Fill(bjet1Pt, evtwt);
-      hName["hLeadingbJetEta"]->Fill(bjet1Eta, evtwt);
-      
+      if (nb != 0){ 
+         hName["hLeadingbJetPt"]->Fill(bjet1Pt, evtwt);
+         hName["hLeadingbJetEta"]->Fill(bjet1Eta, evtwt);
+      }
       hName["hDelRJet1Met"]-> Fill (dR_jet1MET , evtwt); 
       hName["hHT"]->Fill(HT, evtwt);
       hName["hST"]->Fill(ST, evtwt);
@@ -297,10 +314,11 @@ void DelphesVLQAnalysis::Loop(){
                }//top pt
             }//dR cut
          }
+
       }
       else{//resolved case 
          DoMassReco(*jets, leptonP4, nuP4, higgsMass, topMass, chi2_dR, chi2_higgs, chi2_top);
-         
+                
          if (chi2_dR.first != 100000.){//read the output if event as >=4 jets 
             hName["hChi2"]->Fill(chi2_dR.first, evtwt);
             hName["hdR_Ht"]->Fill(chi2_dR.second, evtwt);
@@ -323,7 +341,7 @@ void DelphesVLQAnalysis::Loop(){
                   hName["hWPtReco"]->Fill(WPt, evtwt);
                   hName["hTPrimeMReco"]->Fill(TpM, evtwt);              
                   if(nb==1) {hName["hTPrimeMReco_1bjet"]->Fill(TpM, evtwt);}
-                  else      {hName["hTPrimeMReco_2bjet"]->Fill(TpM, evtwt);}
+                  else if(nb>1) {hName["hTPrimeMReco_2bjet"]->Fill(TpM, evtwt);}
                   hName["hSTResolved"]->Fill(ST, evtwt);
                }
             }
@@ -331,6 +349,7 @@ void DelphesVLQAnalysis::Loop(){
          }
       //cout << "chi2: " << chi2_dR.first << ", dR: " << chi2_dR.second << ", higgs mass: " 
       //     << higgsM <<", top mass: " << TpM << ", T' mass: " << TpM << ", W mass: "<< WM << endl;
+      
       }      
 
 
@@ -347,14 +366,16 @@ void DelphesVLQAnalysis::Loop(){
       hName["hLeadingJetEta_sig"]->Fill(jet1Eta, evtwt); 
       hName["hSecLeadingJetPt_sig"]->Fill(jet2Pt, evtwt);
       hName["hSecLeadingJetEta_sig"]->Fill(jet2Eta, evtwt); 
-      hName["hNbjets_sig"]->Fill(nb, evtwt); 
-      hName["hLeadingbJetPt_sig"]->Fill(bjet1Pt, evtwt);
-      hName["hLeadingbJetEta_sig"]->Fill(bjet1Eta, evtwt);
+      hName["hNbjets_sig"]->Fill(nb, evtwt);
+      if (nb != 0){ 
+         hName["hLeadingbJetPt_sig"]->Fill(bjet1Pt, evtwt);
+         hName["hLeadingbJetEta_sig"]->Fill(bjet1Eta, evtwt);
+      }
       hName["hMet_sig"]-> Fill (met->P4().Pt(), evtwt); 
       hName["hDelRJet1Met_sig"]-> Fill (dR_jet1MET , evtwt); 
       hName["hHT_sig"]->Fill(HT, evtwt);
       hName["hST_sig"]->Fill(ST, evtwt);
-     
+   
    }//event loop
    writeHisto();
    
@@ -368,8 +389,9 @@ void DelphesVLQAnalysis::Loop(){
    cout<<"5) >= 3 cent jets        :  "<<hName["hEff"]->GetBinContent(5)<<endl;
    cout<<"6) 1st jet pt            :  "<<hName["hEff"]->GetBinContent(6)<<endl;
    cout<<"7) 2nd jet pt            :  "<<hName["hEff"]->GetBinContent(7)<<endl; 
-   cout<<"8) >= 1 b-jet            :  "<<hName["hEff"]->GetBinContent(8)<<endl;
-   cout<<"9) MET > 20 GeV          :  "<<hName["hEff"]->GetBinContent(9)<<endl;
+   //cout<<"8) >= 1 b-jet            :  "<<hName["hEff"]->GetBinContent(8)<<endl;
+   cout<<"8) MET > 20 GeV          :  "<<hName["hEff"]->GetBinContent(8)<<endl;
+   cout<<"9) ST >= 400             :  "<<hName["hEff"]->GetBinContent(9)<<endl;
    cout<<"10) >= 1 higgs           :  "<<hName["hEff"]->GetBinContent(10)<<endl;
    cout<<""<<endl;
    cout<<"------------------------------------"<<endl;
