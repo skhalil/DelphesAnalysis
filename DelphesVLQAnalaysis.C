@@ -29,6 +29,7 @@ void DelphesVLQAnalysis::Loop(){
       bjets     -> clear();
       fjets     -> clear();
       ak8jets   -> clear();
+      bpartons  -> clear();
       higgsjets -> clear();
       
        // 1 - fill all events
@@ -39,8 +40,8 @@ void DelphesVLQAnalysis::Loop(){
       met = (MissingET*)branchMissingET->At(0);
       
       // Select leptons with pT, |eta|, and Iso cuts
-      CollectionFilter(*branchElectron,  *electrons , 40.0, 4.0, 100);
-      CollectionFilter(*branchMuonTight, *muons     , 40.0, 4.0, 100);
+      CollectionFilter(*branchElectron,  *electrons , 40.0 , 4.0, 100);//100.
+      CollectionFilter(*branchMuonTight, *muons     , 40.0 , 4.0, 100);//100.
       
       // 2 - N ele or muon >= 1
       if (electrons->size() + muons->size() != 1) continue;
@@ -73,11 +74,7 @@ void DelphesVLQAnalysis::Loop(){
 
          if(jetP4.Pt() < 30.0)                 continue;
          if(TMath::Abs(eta) > 5.0)             continue;
-        
-         //traditional jet cleaning for isolated jets
-         //DMif(Overlaps(*jet, *electrons, 0.4))   continue;
-         //DMif(Overlaps(*jet, *muons, 0.4))       continue;
-         
+           
          dR = jetP4.DeltaR(leptonP4);
          hName["hDR"]->Fill(dR, evtwt);
 
@@ -94,7 +91,16 @@ void DelphesVLQAnalysis::Loop(){
          } 
          goodjets->push_back(jet);
       }
-
+      /*
+      //make a list of b-partons in an event:
+      for(j = 0; j < branchParticle->GetEntriesFast(); ++j){
+         genb = (GenParticle*) branchParticle->At(j);
+         if (genb->PID == 5 || genb->PID == -5){
+            bpartons->push_back(genb);
+         }
+      }
+      */
+      
       for(i = 0; i < branchJetAK8->GetEntriesFast(); i++){
          ak8jet = (Jet*)branchJetAK8->At(i);
          jetP4AK8 = ak8jet->P4(); 
@@ -102,14 +108,30 @@ void DelphesVLQAnalysis::Loop(){
          // quality cuts      
          if(jetP4AK8.Pt() < 300.0)                continue;
          if(TMath::Abs(jetP4AK8.Eta()) > 2.4)     continue;
-         //if(Overlaps(*ak8jet, *electrons, 0.4))   continue;
-         //if(Overlaps(*ak8jet, *muons, 0.4))       continue;
-         if(electrons->size()>0 && Overlaps2D(*ak8jets, ele1, 0.4, 40.)) continue;
-         if(muons->size()>0     && Overlaps2D(*ak8jets, mu1 , 0.4, 40.)) continue;
+         //if(electrons->size()>0 && Overlaps2D(*ak8jets, ele1, 0.4, 40.)) {cout << "hello " << endl; continue;}
+         //if(muons->size()>0     && Overlaps2D(*ak8jets, mu1 , 0.4, 40.)) {cout << "hello2 " << endl; continue;}
          if(ak8jet->Tau[1]/ak8jet->Tau[0] > 0.6)  continue;
          if(ak8jet->NSubJetsSoftDropped != 2 )    continue;
          if(jetP4AK8.DeltaR(leptonP4) <= 1.0)     continue;
          if(ak8jet->SoftDroppedP4[0].M() > 160 || ak8jet->SoftDroppedP4[0].M() < 90) continue;
+
+         /*
+         //loop over gen particles and match b-partons with the subjets: SK
+         double dRp1(-100.), dRp2(-100.);
+         for(j = 0; j < bpartons->size(); ++j){
+            b1partonP4 =  bpartons->at(j)->P4();
+            dRp1 = ak8jet->SoftDroppedP4[1].DeltaR(b1partonP4);//match 1st hard subjet with a b-parton
+            for(k = 0; k < bpartons->size(); ++k){
+               if(j == k) continue;  
+               b2partonP4 =  bpartons->at(k)->P4();
+               dRp2 = ak8jet->SoftDroppedP4[2].DeltaR(b2partonP4);//match 2nd hard subjet with another b-parton
+            }
+         }
+         if (dRp1 != -100. && dRp2 != -100.){
+            cout << "dR(s1,b): " << dRp1 <<": dR(s2,b): " << dRp2 << endl;
+         }
+         */
+         
          // fill the jets as Higgs jets
          higgsjets->push_back(ak8jet);
         

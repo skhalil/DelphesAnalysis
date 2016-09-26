@@ -51,7 +51,7 @@ public:
    const Electron *elec, *ele1;
    const Muon *muon, *mu1;
    const Jet *jet, *corrJet, *jet1, *bjet, *ak8jet, *jetak8_1;
-   const GenParticle *partLep, *partEle, *partMu, *partJet, *genPart;   
+   const GenParticle *partLep, *partEle, *partMu, *partJet, *genPart, *genb1, *genb2, *genb;   
   
    TClonesArray *branchEvent;
    TClonesArray *branchElectron;
@@ -71,6 +71,7 @@ public:
    vector<const Jet*>            *fjets = new vector<const Jet*>();
    vector<const Jet*>          *ak8jets = new vector<const Jet*>();
    vector<const Jet*>        *higgsjets = new vector<const Jet*>();
+   vector<const GenParticle*> *bpartons = new vector<const GenParticle*>();
 
    typedef vector<const Jet*>* Jets;
 
@@ -119,7 +120,7 @@ public:
    
    void DoMassRecoBoost(vector<const Jet*> &ak4Jets, vector<const Jet*> &higgsJets, TLorentzVector LeptonP4, TLorentzVector NuP4, double higgsMass, double topMass, pair<double, double> &chi2_dR, pair<double, TLorentzVector> &chi2_higgs, pair <double, TLorentzVector>  &chi2_top);
   
-   TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4, jetP4Raw, jetP4, jetP41, jetP4AK8, nuP4; 
+   TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4, jetP4Raw, jetP4, jetP41, jetP4AK8, nuP4, b1partonP4, b2partonP4; 
 
    //book histo
    void bookHisto(); 
