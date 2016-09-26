@@ -144,8 +144,8 @@ for Ch, He in T_H:
         h_eff2.SetBinError(int(ibin), unc*100)
     if Ch=='TpB': Ch='Tbj'
     elif Ch=='TpT': Ch='Ttj'
-    setCosmetics(h_eff2, Ch+', T #rightarrow tH (13 TeV)', var+'_Eff_'+Ch, kRed+icol, var)
-    templates.append(h_eff2) 
+    #setCosmetics(h_eff2, Ch+', T #rightarrow tH (13 TeV)', var+'_Eff_'+Ch, kRed+icol, var)
+    #templates.append(h_eff2) 
     icol = icol+1
    
 
@@ -165,13 +165,13 @@ prel = TLatex()
 prel.SetNDC(kTRUE)
 prel.SetTextFont(52)
 prel.SetTextSize(0.05)
-prel.DrawLatex(0.18,0.92,"Simulation")
+#prel.DrawLatex(0.18,0.92,"Simulation")
  
 cms = TLatex()
 cms.SetNDC(kTRUE)
 cms.SetTextFont(61)
 cms.SetTextSize(0.05)
-cms.DrawLatex(0.10,0.92,"CMS")
+cms.DrawLatex(0.10,0.92,"CMS Simulation")
 leg.Draw()
  
 ll = TLatex()

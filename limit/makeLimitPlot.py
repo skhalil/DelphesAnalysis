@@ -128,7 +128,7 @@ def plotLimits(model, masses, run2_masses, th_xs, run2_xs ):
   grexp1sig.Draw("3")
   grexplim .Draw("l")
   grthlim.Draw("Lsame")
-  grRun2lim.Draw("Lsame") 
+  #grRun2lim.Draw("Lsame") 
   #grthlim.GetXaxis().SetRangeUser(1000.,2000.);
 
   grexplim.GetXaxis().SetRangeUser(999,3000)  
@@ -185,7 +185,7 @@ def plotLimits(model, masses, run2_masses, th_xs, run2_xs ):
   legend.SetMargin(0.2)
   legend.SetHeader("")
   #legend.AddEntry(grtheory , theoryline,"l") 
-  legend.AddEntry(grexplim  , "Expected ","l")
+  legend.AddEntry(grexplim  , "Asymptotic CL_{s} expected ","l")
   legend.AddEntry(grexp1sig , "1 s.d.","f")
   legend.AddEntry(grexp2sig , "2 s.d.","f")
   legend.AddEntry(grthlim, "#sigma_{th.}#times#bf{#it{#Beta}}^{2}, c=1, #bf{#it{#Beta}}(T #rightarrow tH)=100%", "l")

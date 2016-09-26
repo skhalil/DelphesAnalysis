@@ -7,7 +7,7 @@ import subprocess
 #suffix = '_sig'
 
 options = [
-   #['hEff',            '1', '0'],
+  # ['hEff',            '1', '0'],
    #['hLepIso',         '1', '0'],
    #['hLepIso_sig',     '1', '0'],
    #['hLepEta',         '1', '0'], 
@@ -25,7 +25,7 @@ options = [
    #['hForwardJetEta',      '1', '0'],
    #['hForwardJetEta_sig',  '1', '0'],
    #['hLeadingJetPt',       '1', '0'],
-   #['hLeadingJetPt_sig',   '1', '0'],
+  # ['hLeadingJetPt_sig',   '1', '0'],
    #['hSecLeadingJetPt',    '1', '0'],
    #['hSecLeadingJetPt_sig','1', '0'],
    #['hLeadingbJetPt',      '1', '0'],
@@ -39,12 +39,12 @@ options = [
    #['hST',                 '1', '1'],
    #['hST_sig',             '1', '1'],
 
-  # ['hDelPtRel',           '1', '0'],
+  #['hDelPtRel',           '1', '0'],
   # ['hPtRel',              '1', '0'],   
   # ['hDPtRel',             '1', '0'],   
   # ['hDRMin',              '1', '0'],
   # ['hDR',                 '1', '0'],
-  # ['hHiggsMReco',         '1', '0'], 
+   #['hHiggsMReco',         '1', '0'], 
    #['hHiggsMRecoBoost',    '1', '0'],   
   # ['hHiggsPt',            '1', '0'],
    #['hHiggsPtBoost',       '1', '0'], 
@@ -54,13 +54,13 @@ options = [
   #['hTopMRecoBoost',      '1', '0'],
 
   #['hTPrimeMReco',         '1', '1'],
-  ['hTPrimeMRecoBoost',    '1', '1'],
+  #['hTPrimeMRecoBoost',    '1', '1'],
   # ['hTPrimeMReco_1bjet',   '1', '1'],
   # ['hTPrimeMReco_2bjet',   '1', '1'],
   # ['hdR_Ht',               '1', '0'],
    #['hdR_HtBoost',          '1', '0'],
    #['hWMReco',              '1', '0'],
-  # ['hChi2',                '1', '0'],
+   #['hChi2',                '1', '0'],
    #['hChi2Boost',           '1', '1'],
   
     #['hSTBoost',            '1', '1'],     

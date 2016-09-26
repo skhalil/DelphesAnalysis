@@ -9,7 +9,15 @@ from ROOT import Double,kBlue,kRed,kOrange,kMagenta,kYellow,kCyan,kGreen,kGray,k
 
 gROOT.Macro("~/rootlogon.C")
 gStyle.SetOptStat(0)
-
+#gROOT.SetBatch()
+gROOT.SetStyle("Plain")
+gStyle.SetOptTitle(0)
+gStyle.SetPalette(1)
+gStyle.SetNdivisions(405,"x");
+gStyle.SetEndErrorSize(0.)
+gStyle.SetErrorX(0.001)
+gStyle.SetPadTickX(1)
+gStyle.SetPadTickY(1)
 # ===============
 # options
 # ===============
@@ -24,7 +32,7 @@ parser.add_option('--Lumi', metavar='D', type='float', action='store',
                   dest='Lumi',
                   help='Data Luminosity in pb-1')
 parser.add_option('--plotDir', metavar='P', type='string', action='store',
-                  default='Sep19Plots',
+                  default='Sep20Plots',
                   dest='plotDir',
                   help='output directory of plots')
 parser.add_option('--rebin', metavar='T', type='int', action='store',
@@ -39,6 +47,10 @@ parser.add_option('--verbose',action='store_true',
                   default=False,
                   dest='verbose',
                   help='verbose switch')
+parser.add_option('--legOnly',action='store_true',
+                  default=False,
+                  dest='legOnly',
+                  help='plot legend only')
 (options,args) = parser.parse_args()
 # ==========end: options =============
 var = options.var
@@ -47,6 +59,7 @@ outDir = options.plotDir
 lumi = options.Lumi
 drawLog = options.logScale
 verbose = options.verbose
+legOnly = options.legOnly
 # ==========add the input ============
 
 execfile("input.py")
@@ -63,26 +76,26 @@ vvLabel       = 'vv_'
 vvLeg         = 'Diboson'
 
 TbjM1Label    = 'Tbj_M1000_'
-TbjM1Leg      = 'Tbj_M1 (T #rightarrow tH)'#, 1pb'
+TbjM1Leg      = 'Tbj_M1.0 (T #rightarrow tH)'#, 1pb'
 TbjM1p5Label  = 'Tbj_M1500_'
 TbjM1p5Leg    = 'Tbj_M1.5 (T #rightarrow tH)'#, 1pb'
 TbjM2Label    = 'Tbj_M2000_'
-TbjM2Leg      = 'Tbj_M2 (T #rightarrow tH)'#, 1pb'
+TbjM2Leg      = 'Tbj_M2.0 (T #rightarrow tH)'#, 1pb'
 TbjM2p5Label  = 'Tbj_M2500_'
 TbjM2p5Leg    = 'Tbj_M2.5 (T #rightarrow tH)'#, 1pb'
 TbjM3Label    = 'Tbj_M3000_'
-TbjM3Leg      = 'Tbj_M3 (T #rightarrow tH)'#, 1pb'
+TbjM3Leg      = 'Tbj_M3.0 (T #rightarrow tH)'#, 1pb'
 
 TtjM1Label    = 'Ttj_M1000_'
-TtjM1Leg      = 'Ttj_M1 (T #rightarrow tH)'#, 1pb'
+TtjM1Leg      = 'Ttj_M1.0 (T #rightarrow tH)'#, 1pb'
 TtjM1p5Label  = 'Ttj_M1500_'
 TtjM1p5Leg    = 'Ttj_M1.5 (T #rightarrow tH)'#, 1pb'
 TtjM2Label    = 'Ttj_M2000_'
-TtjM2Leg      = 'Ttj_M2 (T #rightarrow tH)'#, 1pb'
+TtjM2Leg      = 'Ttj_M2.0 (T #rightarrow tH)'#, 1pb'
 TtjM2p5Label  = 'Ttj_M2500_'
 TtjM2p5Leg    = 'Ttj_M2.5 (T #rightarrow tH)'#, 1pb'
 TtjM3Label    = 'Ttj_M3000_'
-TtjM3Leg      = 'Ttj_M3 (T #rightarrow tH)'#, 1pb'
+TtjM3Leg      = 'Ttj_M3.0 (T #rightarrow tH)'#, 1pb'
 
 # === create structure ============
 top = [
@@ -189,7 +202,7 @@ h_data.Reset()
 n3 =  h_data.GetName(); old3 = n3.split('_')[0]; new3 = n3.replace(old3, 'data_obs')
 h_data.SetName(new3)
 
-c1 = TCanvas('c1', 'c1', 1000, 600)
+c1 = TCanvas('c1', 'c1', 800, 600)
 
 templates = []
 templates.append(h_top)
@@ -259,13 +272,15 @@ else: hs.SetMinimum(10)
 if drawLog == '1':
     gPad.SetLogy()
 
-hs.Draw("Hist")
+if not legOnly:
+    hs.Draw("Hist")
 for ihist in reversed(templates[5:15]):
     print ihist.GetName()
     #ihist.SetMaximum(10000)
     #ihist.GetYaxis().SetTitle("a.u")
     #ihist.Scale(1/300000.)
-    ihist.Draw("same, hist")     
+    if not legOnly:
+        ihist.Draw("same, hist")     
     
 xTitle= h_top.GetXaxis().GetTitle()
 yTitle= h_top.GetYaxis().GetTitle()
@@ -276,20 +291,21 @@ gPad.RedrawAxis()
 ll = TLatex()
 ll.SetNDC(kTRUE)
 ll.SetTextSize(0.05)
-ll.DrawLatex(0.68,0.92, "3000 fb^{-1} (14 TeV)");
+ll.DrawLatex(0.63,0.92, "3000 fb^{-1} (14 TeV)");
 
 prel = TLatex()
 prel.SetNDC(kTRUE)
 prel.SetTextFont(52)
 prel.SetTextSize(0.05)
-prel.DrawLatex(0.34,0.92,"Simulation")
+prel.DrawLatex(0.18,0.92,"Simulation")
 
 cms = TLatex()
 cms.SetNDC(kTRUE)
 cms.SetTextFont(61)
 cms.SetTextSize(0.05)
-cms.DrawLatex(0.15,0.92,"CMS-Delphes")
-leg.Draw()
+cms.DrawLatex(0.10,0.92,"CMS")
+if var != 'hTPrimeMRecoBoost' and not legOnly:
+    leg.Draw()
 
 c1.SaveAs(outDir+"/"+var+".png")
 c1.SaveAs(outDir+"/"+var+".pdf")

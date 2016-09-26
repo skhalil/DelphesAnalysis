@@ -123,7 +123,8 @@ Ttj_M3_num         = f_Ttj_M3.Get('hNGenEvents').GetBinContent(1)
 #if var == 'hTPrimeMRecoBoost':
 #    leg = TLegend(0.88,0.88,0.86,0.60)
 #else:
-leg = TLegend(0.66,0.88,0.86,0.30)#44 
+leg = TLegend(0.66,0.88,0.86,0.60)
+#leg = TLegend(0.66,0.88,0.86,0.30)#44 
 leg.SetBorderSize(0)
 leg.SetFillColor(10)
 leg.SetLineColor(10)
