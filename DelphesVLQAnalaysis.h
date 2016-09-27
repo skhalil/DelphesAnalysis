@@ -50,10 +50,11 @@ public:
    const MissingET *met;
    const Electron *elec, *ele1;
    const Muon *muon, *mu1;
-   const Jet *jet, *corrJet, *jet1, *bjet, *ak8jet, *jetak8_1;
+   const Jet *jet, *corrJet, *jet1, *bjet, *fjet, *ak8jet, *jetak8_1;
    const GenParticle *partLep, *partEle, *partMu, *partJet, *genPart, *genb1, *genb2, *genb;   
   
    TClonesArray *branchEvent;
+   TClonesArray *branchVertex;
    TClonesArray *branchElectron;
    TClonesArray *branchMuonTight;
    TClonesArray *branchJet;
@@ -120,7 +121,7 @@ public:
    
    void DoMassRecoBoost(vector<const Jet*> &ak4Jets, vector<const Jet*> &higgsJets, TLorentzVector LeptonP4, TLorentzVector NuP4, double higgsMass, double topMass, pair<double, double> &chi2_dR, pair<double, TLorentzVector> &chi2_higgs, pair <double, TLorentzVector>  &chi2_top);
   
-   TLorentzVector leptonP4, mostForwardJetP4, nearestJetP4, jetP4Raw, jetP4, jetP41, jetP4AK8, nuP4, b1partonP4, b2partonP4; 
+   TLorentzVector leptonP4, mostForwardJetP4, partJetP4, nearestJetP4, jetP4Raw, jetP4, jetP41, jetP4AK8, nuP4, b1partonP4, b2partonP4; 
 
    //book histo
    void bookHisto(); 
@@ -169,6 +170,7 @@ void DelphesVLQAnalysis::Init(const char *inString, const char *outFileName){
    cout << "** Chain contains " << allEntries << " events" << endl;
    
    branchEvent                 = treeReader->UseBranch("Event");
+   branchVertex                = treeReader->UseBranch("Vertex");
    branchElectron              = treeReader->UseBranch("ElectronCHS"); //ElectronCHS
    branchMuonTight             = treeReader->UseBranch("MuonTightCHS");//MuonTightCHS
    branchJet                   = treeReader->UseBranch("JetPUPPI"); //JetPUPPI
@@ -287,7 +289,7 @@ TLorentzVector DelphesVLQAnalysis::OverlapConstituents(const Jet& jet, const vec
    
    jetP4  = jet.P4();
    const TObject *object, *jobject;
-   
+   TObject *fobject;
    // loop over filtered lepton(s)
    for(int i = 0; i < lepColl.size(); i++){
     object = lepColl.at(i);

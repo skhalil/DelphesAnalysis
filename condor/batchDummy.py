@@ -2,7 +2,7 @@ universe = vanilla
 Executable = condor.sh
 x509userproxy = $ENV(X509_USER_PROXY)
 Requirements = OpSys == "LINUX" && (Arch != "DUMMY" ) 
-transfer_input_files = RunAnalyzer.C, DelphesVLQAnalaysis.h, DelphesVLQAnalaysis.C, delphes.tar.gz
+transfer_input_files = RunAnalyzer.C, DelphesVLQAnalaysis.h, DelphesVLQAnalaysis.C, BTagEfficiencyMediumOP.h, delphes.tar.gz
 should_transfer_files = YES
 WhenTOTransferOutput  = ON_EXIT
 request_memory = 2100

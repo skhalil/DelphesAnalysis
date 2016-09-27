@@ -35,7 +35,10 @@ void DelphesVLQAnalysis::Loop(){
        // 1 - fill all events
       ncut++;
       hName["hEff"] -> Fill (ncut, evtwt);
-      
+
+      // access vertices
+      double vertices = branchVertex->GetEntriesFast(); 
+    
       // access MissingET
       met = (MissingET*)branchMissingET->At(0);
       
@@ -91,51 +94,7 @@ void DelphesVLQAnalysis::Loop(){
          } 
          goodjets->push_back(jet);
       }
-      /*
-      //make a list of b-partons in an event:
-      for(j = 0; j < branchParticle->GetEntriesFast(); ++j){
-         genb = (GenParticle*) branchParticle->At(j);
-         if (genb->PID == 5 || genb->PID == -5){
-            bpartons->push_back(genb);
-         }
-      }
-      */
-      
-      for(i = 0; i < branchJetAK8->GetEntriesFast(); i++){
-         ak8jet = (Jet*)branchJetAK8->At(i);
-         jetP4AK8 = ak8jet->P4(); 
-       
-         // quality cuts      
-         if(jetP4AK8.Pt() < 300.0)                continue;
-         if(TMath::Abs(jetP4AK8.Eta()) > 2.4)     continue;
-         //if(electrons->size()>0 && Overlaps2D(*ak8jets, ele1, 0.4, 40.)) {cout << "hello " << endl; continue;}
-         //if(muons->size()>0     && Overlaps2D(*ak8jets, mu1 , 0.4, 40.)) {cout << "hello2 " << endl; continue;}
-         if(ak8jet->Tau[1]/ak8jet->Tau[0] > 0.6)  continue;
-         if(ak8jet->NSubJetsSoftDropped != 2 )    continue;
-         if(jetP4AK8.DeltaR(leptonP4) <= 1.0)     continue;
-         if(ak8jet->SoftDroppedP4[0].M() > 160 || ak8jet->SoftDroppedP4[0].M() < 90) continue;
 
-         /*
-         //loop over gen particles and match b-partons with the subjets: SK
-         double dRp1(-100.), dRp2(-100.);
-         for(j = 0; j < bpartons->size(); ++j){
-            b1partonP4 =  bpartons->at(j)->P4();
-            dRp1 = ak8jet->SoftDroppedP4[1].DeltaR(b1partonP4);//match 1st hard subjet with a b-parton
-            for(k = 0; k < bpartons->size(); ++k){
-               if(j == k) continue;  
-               b2partonP4 =  bpartons->at(k)->P4();
-               dRp2 = ak8jet->SoftDroppedP4[2].DeltaR(b2partonP4);//match 2nd hard subjet with another b-parton
-            }
-         }
-         if (dRp1 != -100. && dRp2 != -100.){
-            cout << "dR(s1,b): " << dRp1 <<": dR(s2,b): " << dRp2 << endl;
-         }
-         */
-         
-         // fill the jets as Higgs jets
-         higgsjets->push_back(ak8jet);
-        
-      }
       // - Store 2d isolation variables 
       Float_t ptRel = nearestJetP4.Perp( leptonP4.Vect() );
       TVector3 nearestJet_v3 = nearestJetP4.Vect();
@@ -251,14 +210,51 @@ void DelphesVLQAnalysis::Loop(){
          HT += jets->at(i)->P4().Pt();
       }     
       ST = HT + leptonP4.Pt() + met->P4().Pt();
-
-      //--------- Preselection done ---------------
-      for(j = 0; j < higgsjets->size(); ++j){
-         jetak8_1 = higgsjets->at(j);
-         hName["hSoftMass"]-> Fill(jetak8_1->SoftDroppedP4[0].M(), evtwt); 
-         hName["hSoftPt"]-> Fill(jetak8_1->SoftDroppedP4[0].Pt(), evtwt);
+      
+      
+      //make a list of b-partons in an event:
+      for(j = 0; j < branchParticle->GetEntriesFast(); ++j){
+         genb = (GenParticle*) branchParticle->At(j);
+         if (genb->PID == 5 || genb->PID == -5){
+            bpartons->push_back(genb);
+         }
       }
       
+      for(i = 0; i < branchJetAK8->GetEntriesFast(); i++){
+         ak8jet = (Jet*)branchJetAK8->At(i);
+         jetP4AK8 = ak8jet->P4();  
+         // quality cuts      
+         if(jetP4AK8.Pt() < 300.0)                continue;
+         if(TMath::Abs(jetP4AK8.Eta()) > 2.4)     continue;
+         if(ak8jet->Tau[1]/ak8jet->Tau[0] > 0.6)  continue;
+         if(ak8jet->NSubJetsSoftDropped != 2 )    continue;
+         if(jetP4AK8.DeltaR(leptonP4) <= 1.0)     continue;
+         hName["hSoftMass"]-> Fill(ak8jet->SoftDroppedP4[0].M(), evtwt); 
+         if(ak8jet->SoftDroppedP4[0].M() > 160 || ak8jet->SoftDroppedP4[0].M() < 90) continue;
+         hName["hSoftPt"]-> Fill(ak8jet->SoftDroppedP4[0].Pt(), evtwt);
+
+         /*
+         //loop over gen particles and match b-partons with the subjets: SK
+         double dRp1(-100.), dRp2(-100.);
+         for(j = 0; j < bpartons->size(); ++j){
+            b1partonP4 =  bpartons->at(j)->P4();
+            dRp1 = ak8jet->SoftDroppedP4[1].DeltaR(b1partonP4);//match 1st hard subjet with a b-parton
+            for(k = 0; k < bpartons->size(); ++k){
+               if(j == k) continue;  
+               b2partonP4 =  bpartons->at(k)->P4();
+               dRp2 = ak8jet->SoftDroppedP4[2].DeltaR(b2partonP4);//match 2nd hard subjet with another b-parton
+            }
+         }
+         if (dRp1 != -100. && dRp2 != -100.){
+            cout << "dR(s1,b): " << dRp1 <<": dR(s2,b): " << dRp2 << endl;
+         }
+         */
+         
+         // fill the jets as Higgs jets
+         higgsjets->push_back(ak8jet);
+      }
+
+      //--------- Preselection done ---------------      
       hName["hNbjets"]->Fill(nb, evtwt); 
       hName["hLeadingbJetPt"]->Fill(bjet1Pt, evtwt);
       hName["hLeadingbJetEta"]->Fill(bjet1Eta, evtwt);
@@ -294,6 +290,25 @@ void DelphesVLQAnalysis::Loop(){
          ncut++;
          hName["hEff"]->Fill(ncut, evtwt);
 
+         // check the forward jet pT resolution
+         for(j = 0; j < fjets->size(); ++j){            
+            partJetP4.SetPxPyPzE(0.0, 0.0, 0.0, 0.0);
+            fjet = fjets->at(j); 
+            //cout << fjet->Constituents.At(j) << endl;         
+            for(k = 0; k < fjet->Constituents.GetEntriesFast(); ++k){
+               fobject = fjet->Constituents.At(k);
+               //check if object is accessible               
+               //if(fobject == 0) continue; //<--- PROBLAMATIC
+               /*
+               if(fobject->IsA() == GenParticle::Class()) {
+                  partJet = (GenParticle*) fobject;
+                  partJetP4 += partJet->P4();
+               }
+               */
+            }
+            //hName["hPtResFwdJets"]->Fill( (fjet->P4().Pt() - partJetP4.Pt())/fjet->P4().Pt(), evtwt);
+         } 
+    
          DoMassRecoBoost(*jets, *higgsjets, leptonP4, nuP4, higgsMass, topMass, chi2_dR_boost, chi2_higgs_boost, chi2_top_boost);
 
          if (chi2_dR_boost.first != 100000.){ //read the output if event as >=2 jets 
@@ -319,7 +334,7 @@ void DelphesVLQAnalysis::Loop(){
                   hName["hWMRecoBoost"]->Fill(WMBoost, evtwt);
                   hName["hWPtRecoBoost"]->Fill(WPtBoost, evtwt);
                   hName["hTPrimeMRecoBoost"]->Fill(TpMBoost, evtwt);
-                  hName["hSTBoost"]->Fill(ST, evtwt); 
+                  hName["hSTBoost"]->Fill(ST, evtwt);  
                }//top pt
             }//dR cut
          }
@@ -367,6 +382,13 @@ void DelphesVLQAnalysis::Loop(){
          hName["hForwardJetPt_sig"]->Fill( mostForwardJetP4.Pt(), evtwt);
          hName["hForwardJetEta_sig"]->Fill( etaMax, evtwt);
       }
+      if (fjets->size() > 0) {
+         hName["hMiniBiasVertexForward"]->Fill(vertices, evtwt);
+      }
+      if (jets->size() > 0) {
+         hName["hMiniBiasVertexCentral"]->Fill(vertices, evtwt);
+      }
+      hName["hMiniBiasVertex"]->Fill(vertices, evtwt);
       hName["hNFJets_sig"]->Fill(fjets->size(), evtwt);
       hName["hNJets_sig"]->Fill(jets->size(), evtwt);
       hName["hLeadingJetPt_sig"]->Fill(jet1Pt, evtwt);
@@ -380,7 +402,7 @@ void DelphesVLQAnalysis::Loop(){
       hName["hDelRJet1Met_sig"]-> Fill (dR_jet1MET , evtwt); 
       hName["hHT_sig"]->Fill(HT, evtwt);
       hName["hST_sig"]->Fill(ST, evtwt);
-     
+      
    }//event loop
    writeHisto();
    
@@ -443,7 +465,9 @@ void DelphesVLQAnalysis::bookHisto(){
       h1D(("hHT"+cat[i]).c_str(),"H_{T}","H_{T} [GeV]","Events/50 GeV", 80, 0, 4000);
       h1D(("hST"+cat[i]).c_str(), "S_{T}", "S_{T} [GeV]", "Events/50 GeV", 80, 0, 4000);
    }
-  
+   h1D("hMiniBiasVertexCentral", "vertices", "mini bias vertices", "Events", 75, 100, 400); 
+   h1D("hMiniBiasVertexForward", "vertices", "mini bias vertices", "Events", 75, 100, 400);
+   h1D("hMiniBiasVertex", "vertices", "mini bias vertices", "Events", 75, 100, 400);
    h1D("hNGenEvents", "total events", "total events", "Events", 2, 0.5, 2.5) ;
    h1D("hDRMin", "#Delta R_{MIN}(l, jet)", "#Delta R_{MIN}(l,jet)", "Events", 30, 0.0,3.0);
    h1D("hDR", "#DeltaR(l, jet)", "#Delta R(l,jet)", "Events", 30, 0.0,3.0);
@@ -467,7 +491,7 @@ void DelphesVLQAnalysis::bookHisto(){
    h1D("hTPrimePtBoost", "Boosted TPrime pt", "T p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
    h1D("hdR_HtBoost", "Boosted #Delta R(t, H)_{reco}", "#Delta R(t, H)_{reco}", "Events",  25, 0, 5);
    h1D("hSTBoost", "S_{T}, boosted", "S_{T} [GeV]", "Events/50 GeV", 80, 0, 4000);
-
+   h1D("hPtResFwdJets", "Pt resolution of forward jets", "Pt res", "Events", 100, -0.1, 0.1); 
    // for resolved case  
    h1D("hChi2", "Chi2", "#chi_{2}", "Events/10 bins", 50, 0.0, 500);
    h1D("hHiggsMReco", "M_{H,reco}", "M_{H,reco} [GeV]", "Events/9 GeV", 50, 50.0, 500);
@@ -492,7 +516,7 @@ void DelphesVLQAnalysis::BTagEffWtMediumOP(const Jets jets, double& btagwtup, do
 
   double effall(1.), effallup(1.), effalldown(1.);
 
-  for(i = 0; i < goodjets->size(); ++i){
+  for(int i = 0; i < goodjets->size(); ++i){
 
      jet1 = goodjets->at(i);
      Bool_t BtagOk_medium (jet1->BTag & (1 << 1));
