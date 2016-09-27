@@ -98,7 +98,7 @@ public:
 
    double GetChi2Boosted(vector<TLorentzVector> ak4jetsP4, vector<const Jet*> &higgsJets, TLorentzVector LeptonP4, TLorentzVector NuP4, double topMass, double higgsMass, TLorentzVector& topP4, TLorentzVector& higgsP4, double& dR);
    void BTagEffWtMediumOP(const Jets jets, double& btagwtup, double& btagwtdown) ;
-
+   void JetEnergyScale(const Jets, double& jetScaleUp, double jetScaleDown);
    //create references of minChi2 and objects used to minimize the chi2
 
    // for boosted Higgs case

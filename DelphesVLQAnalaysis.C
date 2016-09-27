@@ -4,7 +4,7 @@
 #include <iostream>
 #include "DelphesVLQAnalaysis.h"
 #include "BTagEfficiencyMediumOP.h"
-
+#include "ResolutionFormula.h"
 
 void DelphesVLQAnalysis::Loop(){
    Int_t i = 0, j = 0, ncut = 0, ntot = 0;
@@ -192,7 +192,7 @@ void DelphesVLQAnalysis::Loop(){
        
       double btagwtup(1.), btagwtdown(1.); ////DM
       BTagEffWtMediumOP(goodjets, btagwtup, btagwtdown) ; 
-
+      
       Float_t bjet1Pt = bjets->at(0)->P4().Pt();
       Float_t bjet1Eta= bjets->at(0)->P4().Eta(); 
      
@@ -334,6 +334,8 @@ void DelphesVLQAnalysis::Loop(){
                   hName["hWMRecoBoost"]->Fill(WMBoost, evtwt);
                   hName["hWPtRecoBoost"]->Fill(WPtBoost, evtwt);
                   hName["hTPrimeMRecoBoost"]->Fill(TpMBoost, evtwt);
+                  hName["hTPrimeMRecoBoostbJetUp"]->Fill(TpMBoost, btagwtup*evtwt);
+                  hName["hTPrimeMRecoBoostbJetDn"]->Fill(TpMBoost, btagwtdown*evtwt);
                   hName["hSTBoost"]->Fill(ST, evtwt);  
                }//top pt
             }//dR cut
@@ -488,6 +490,9 @@ void DelphesVLQAnalysis::bookHisto(){
    h1D("hWMRecoBoost", "Boosted W_{W,reco}", "M_{W,reco} [GeV]", "Events/3 GeV", 150, 50.0,500);
    h1D("hWPtRecoBoost", "Boosted W pt", "W p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
    h1D("hTPrimeMRecoBoost", "Boosted M_{T,reco}", "M_{T,reco} [GeV]", "Events/36 GeV ", 100, 60.0, 3660.);
+   h1D("hTPrimeMRecoBoostbJetUp", "Boosted M_{T,reco}", "M_{T,reco} [GeV]", "Events/36 GeV ", 100, 60.0, 3660.);
+   h1D("hTPrimeMRecoBoostbJetDn", "Boosted M_{T,reco}", "M_{T,reco} [GeV]", "Events/36 GeV ", 100, 60.0, 3660.);
+
    h1D("hTPrimePtBoost", "Boosted TPrime pt", "T p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
    h1D("hdR_HtBoost", "Boosted #Delta R(t, H)_{reco}", "#Delta R(t, H)_{reco}", "Events",  25, 0, 5);
    h1D("hSTBoost", "S_{T}, boosted", "S_{T} [GeV]", "Events/50 GeV", 80, 0, 4000);
@@ -506,6 +511,22 @@ void DelphesVLQAnalysis::bookHisto(){
    h1D("hTPrimePt", "TPrime pt", "T p_{T} [GeV]", "Events/ 20 GeV", 50, 0, 1000);
    h1D("hdR_Ht", "#Delta R(t, H)_{reco}", "#Delta R(t, H)_{reco}", "Events",  25, 0, 5);
    h1D("hSTResolved", "S_{T}, resolved", "S_{T} [GeV]", "Events/50 GeV", 80, 0, 4000);
+}
+
+void DelphesVLQAnalysis::JetEnergyScale(const Jets, double& jetScaleUp, double jetScaleDown) {
+   double var(0.01);
+   
+   for (int i = 0; i < goodjets->size(); ++i){
+      jet1 = goodjets->at(i);
+      double pt(jet1->P4().Pt()), eta(fabs(jet1->P4().Eta()));
+      double unc = ResolutionFormula(pt, eta);
+      //cout << unc << endl;
+      double ijetScaleUp = (1 + var * unc); 
+      double ijetScaleDown = (1 - var * unc);
+      jetScaleUp *= ijetScaleUp;
+      jetScaleDown *= ijetScaleDown;
+   }
+   return;
 }
 
 void DelphesVLQAnalysis::BTagEffWtMediumOP(const Jets jets, double& btagwtup, double& btagwtdown) { 
