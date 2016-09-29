@@ -2,7 +2,7 @@ imax 1  number of channels
 jmax 2  number of backgrounds 
 kmax 9  number of nuisance parameters 
 ------------------------------------------- 
-shapes * * all.root $PROCESS$CHANNEL$SYSTEMATIC 
+shapes * * all.root $PROCESS$CHANNEL $PROCESS$CHANNEL$SYSTEMATIC 
 ------------------------------------------- 
 # we have just one channel, in which we observe x data events 
 bin         _hTPrimeMRecoBoost 
@@ -18,11 +18,11 @@ process                     0         1         2
 rate                        106371    2346741   360148    
 --------------------------------------------------------------------------
 lumi         lnN            1.0150    1.015     1.015     lumi 
-norm_ttbar   lnN            -         1.1600    -          ttbar normalization 
+norm_ttbar   lnN            -         1.1800    -          ttbar normalization 
 norm_vjets   lnN            -         -         1.2000     vjets normalization 
-ID           lnN            1.0100    1.0100    1.0100      ID SF 
+ID           lnN            1.0500    1.0500    1.0500      ID SF 
 trigger      lnN            1.0100    1.0100    1.0100      trigger SF 
-lep_iso      lnN            1.1000    1.1000    1.1000      lepton isolation SF 
+QCD          lnN            -         1.1700    1.1700      QCD 
 JES          lnN            1.0380    1.0380    1.0380      JES 
-JER          lnN            1.0100    1.0100    1.0100      JER 
+JER          lnN            1.0200    1.0200    1.0200      JER 
 btag        shape          1.0       1.0       1.0         b-tag SF 

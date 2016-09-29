@@ -95,6 +95,11 @@ parser.add_option('--var', metavar='V', type='string', action='store',
                   dest='var',
                   help='var to get')
 
+parser.add_option('--sigType', metavar='V', type='string', action='store',
+                  default='Ttj',
+                  dest='sigType',
+                  help='Tbj/Ttj')
+
 parser.add_option('--plot',action='store_true',
                   default=False,
                   dest='plot',
@@ -114,6 +119,7 @@ parser.add_option('--latex',action='store_true',
 # ==========end: options =============
 var = options.var
 s = options.shape
+sig = options.sigType
 Path = 'inputFiles/'
 f = TFile(Path+'all.root')
 histMass = []
@@ -134,7 +140,7 @@ templates.append(h_allvjet)
 templates.append(h_total)
 
 for m in mass:
-    h_VLQ =  f.Get('Ttj_M'+m+'_h'+var)
+    h_VLQ =  f.Get(sig+'_M'+m+'_h'+var)
     histMass.append(h_VLQ)
     if m == '1000':
         templates.append(h_VLQ)
@@ -172,7 +178,7 @@ for h in histMass:
     d_out.write("kmax 9  number of nuisance parameters \n")
     d_out.write("------------------------------------------- \n")
     if s: 
-        d_out.write("shapes * * all.root $PROCESS$CHANNEL \n")#.format(h_data.GetNa)
+        d_out.write("shapes * * all.root $PROCESS$CHANNEL $PROCESS$CHANNEL$SYSTEMATIC \n")#.format(h_data.GetNa)
         d_out.write("------------------------------------------- \n")
     d_out.write("# we have just one channel, in which we observe x data events \n")
     d_out.write("bin         {0:<8} \n".format('_h'+var))  
@@ -189,14 +195,15 @@ for h in histMass:
     d_out.write("--------------------------------------------------------------------------\n")
     
     d_out.write("lumi         lnN            {0:<8.4f}  {1:<8}  {2:<8}  lumi \n".format(1.015, 1.015, 1.015))
-    d_out.write("norm_ttbar   lnN            {0:<8}  {1:<8.4f}  {2:<8}   ttbar normalization \n".format('-', 1.160, '-') )
+    d_out.write("norm_ttbar   lnN            {0:<8}  {1:<8.4f}  {2:<8}   ttbar normalization \n".format('-', 1.180, '-') )   
     d_out.write("norm_vjets   lnN            {0:<8}  {1:<8}  {2:<8.4f}   vjets normalization \n".format('-', '-', 1.200) )
-    d_out.write("b-tagSF      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    b-tag SF \n".format(1.027, 1.027, 1.027) )
-    d_out.write("ID           lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    ID SF \n".format(1.010, 1.010, 1.010) )
+    d_out.write("ID           lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    ID SF \n".format(1.050, 1.050, 1.050) )
     d_out.write("trigger      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    trigger SF \n".format(1.010, 1.010, 1.010) )
-    d_out.write("lep_iso      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    lepton isolation SF \n".format(1.100, 1.100, 1.100) )
+    #d_out.write("lep_iso      lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    lepton isolation SF \n".format(1.100, 1.100, 1.100) )
+    d_out.write("QCD          lnN            {0:<8}  {1:<8.4f}  {2:<8.4f}    QCD \n".format('-', 1.170, 1.170) )
     d_out.write("JES          lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    JES \n".format(1.038, 1.038, 1.038) )
-    d_out.write("JER          lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    JER \n".format(1.010, 1.010, 1.010) )
+    d_out.write("JER          lnN            {0:<8.4f}  {1:<8.4f}  {2:<8.4f}    JER \n".format(1.020, 1.020, 1.020) )
+    d_out.write("btag        shape          {0:<8.1f}  {1:<8.1f}  {2:<8.1f}    b-tag SF \n".format(1.0, 1.0, 1.0) )
     d_out.close()    
 
 
